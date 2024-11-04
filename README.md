@@ -1,5 +1,23 @@
 Welcome to the OpenSSL Project
 ==============================
+----
+
+Custom implementation to support entropic encryption
+
+- All changes in chachapoly algorithm are being implemented first to encrypt, then to decyrpt, and to show all the logs.
+- After installing openssl, with make, the following commands must be run in WSL: This is in order to run the custom downloaded openssl. In docker it might be different...
+1) Create keys and certs (I dont rmemeber but its easy!)
+
+2) sudo LD_LIBRARY_PATH=/home/carlos/openssl /home/carlos/openssl/apps/openssl s_server     -key key.pem     -cert cert.pem     -tls1_3     -ciphersuites TLS_CHACHA20_POLY1305_SHA256     -accept 443
+3) LD_LIBRARY_PATH=/home/carlos/openssl /home/carlos/openssl/apps/openssl s_client -connect 127.0.0.1:443 -tls1_3
+- A lot of logging has been added to find the right spot when encryption and decryption happens. In files `providers\implementations\ciphers\cipher_chacha20_poly1305_hw.c` and `providers\implementations\ciphers\cipher_chacha20_hw.c` and `\\wsl.localhost\Ubuntu-20.04\home\carlos\openssl\providers\implementations\ciphers\cipher_chacha20.h`
+
+To do: 
+
+1) Modify build.info, or whatever makefile needed to link chachapoly to the gfx2 library. I think I did this already.
+2) Make sure gf2x is installed. I can test this in docker container from Mehmet.
+
+----
 
 [![openssl logo]][www.openssl.org]
 
