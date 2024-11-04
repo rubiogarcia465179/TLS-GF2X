@@ -69,6 +69,7 @@ static const char *propq = NULL;
 
 static int aes_gcm_encrypt(void)
 {
+    
     int ret = 0;
     EVP_CIPHER_CTX *ctx;
     EVP_CIPHER *cipher = NULL;

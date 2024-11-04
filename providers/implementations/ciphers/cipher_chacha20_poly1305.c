@@ -247,7 +247,7 @@ static int chacha20_poly1305_einit(void *vctx, const unsigned char *key,
                                   size_t ivlen, const OSSL_PARAM params[])
 {
     int ret;
-
+        printf("\nCHACHAPOLY ENCRYPTION: INITIALIZATION!!!\n");
     /* The generic function checks for ossl_prov_is_running() */
     ret = ossl_cipher_generic_einit(vctx, key, keylen, iv, ivlen, NULL);
     if (ret && iv != NULL) {
@@ -267,7 +267,7 @@ static int chacha20_poly1305_dinit(void *vctx, const unsigned char *key,
                                   size_t ivlen, const OSSL_PARAM params[])
 {
     int ret;
-
+        printf("\nCHACHAPOLY DECRYPTION: INITIALIZATION!!!\n");
     /* The generic function checks for ossl_prov_is_running() */
     ret = ossl_cipher_generic_dinit(vctx, key, keylen, iv, ivlen, NULL);
     if (ret && iv != NULL) {
@@ -286,41 +286,85 @@ static int chacha20_poly1305_cipher(void *vctx, unsigned char *out,
                                     size_t *outl, size_t outsize,
                                     const unsigned char *in, size_t inl)
 {
+    printf("\nEntering cipher function: chacha20_poly1305_cipher\n");
+    printf("vctx: %p\n", vctx);
+    printf("out: %p\n", (void *)out);
+    printf("outl: %p (value: %zu)\n", (void *)outl, *outl);
+    printf("outsize: %zu\n", outsize);
+    printf("in: %p\n", (void *)in);
+    printf("inl: %zu\n", inl);
+
     PROV_CIPHER_CTX *ctx = (PROV_CIPHER_CTX *)vctx;
     PROV_CIPHER_HW_CHACHA20_POLY1305 *hw =
         (PROV_CIPHER_HW_CHACHA20_POLY1305 *)ctx->hw;
 
-    if (!ossl_prov_is_running())
+    printf("\nContext and hardware initialized\n");
+
+    if (!ossl_prov_is_running()) {
+        printf("Provider is not running\n");
         return 0;
+    }
 
     if (inl == 0) {
+        printf("\nInput length is zero\n");
         *outl = 0;
         return 1;
     }
 
     if (outsize < inl) {
+        printf("Output buffer too small: outsize = %zu, inl = %zu\n", outsize, inl);
         ERR_raise(ERR_LIB_PROV, PROV_R_OUTPUT_BUFFER_TOO_SMALL);
         return 0;
     }
 
-    if (!hw->aead_cipher(ctx, out, outl, in, inl))
+    printf("\nCalling aead_cipher with input length: %zu\n", inl);
+    if (!hw->aead_cipher(ctx, out, outl, in, inl)) {
+        printf("aead_cipher failed\n");
         return 0;
+    }
+
+    printf("aead_cipher succeeded\n");
+//    printf("Output length: %zu\n", *outl);
+ if (out != NULL && *outl > 0) {
+        printf("\nOutput data: ");
+        for (size_t i = 0; i < *outl; i++) {
+            printf("%02x ", out[i]);
+        }
+        printf("\n");
+    } 
+
 
     return 1;
 }
 
+
 static int chacha20_poly1305_final(void *vctx, unsigned char *out, size_t *outl,
                                    size_t outsize)
 {
+    printf("\nchacha20_poly1305_final: Finishing function\n");
+
+    printf("\nvctx: %p\n", vctx);
+    printf("out: %p\n", (void *)out);
+    printf("outl: %p (value: %zu)\n", (void *)outl, *outl);
+    printf("outsize: %zu\n", outsize);
+
     PROV_CIPHER_CTX *ctx = (PROV_CIPHER_CTX *)vctx;
     PROV_CIPHER_HW_CHACHA20_POLY1305 *hw =
         (PROV_CIPHER_HW_CHACHA20_POLY1305 *)ctx->hw;
 
     if (!ossl_prov_is_running())
         return 0;
-
+    printf("Calling aead_cipher with output length: %zu\n", outl);
     if (hw->aead_cipher(ctx, out, outl, NULL, 0) <= 0)
         return 0;
+    
+ if (out != NULL && *outl > 0) {
+        printf("\nOutput data: ");
+        for (size_t i = 0; i < *outl; i++) {
+            printf("%02x ", out[i]);
+        }
+        printf("\n");
+    }
 
     *outl = 0;
     return 1;

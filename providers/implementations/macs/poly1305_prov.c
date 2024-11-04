@@ -108,6 +108,7 @@ static int poly1305_update(void *vmacctx, const unsigned char *data,
                        size_t datalen)
 {
     struct poly1305_data_st *ctx = vmacctx;
+    printf("poly1305_update - file poly1305_prov.c");
 
     ctx->updated = 1;
     if (datalen == 0)
@@ -122,7 +123,7 @@ static int poly1305_final(void *vmacctx, unsigned char *out, size_t *outl,
                           size_t outsize)
 {
     struct poly1305_data_st *ctx = vmacctx;
-
+    printf("poly1305_final - file poly1305_prov.c");
     if (!ossl_prov_is_running())
         return 0;
     ctx->updated = 1;

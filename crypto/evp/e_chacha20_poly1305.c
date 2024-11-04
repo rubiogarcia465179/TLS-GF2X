@@ -58,6 +58,7 @@ static int chacha_init_key(EVP_CIPHER_CTX *ctx,
 static int chacha_cipher(EVP_CIPHER_CTX *ctx, unsigned char *out,
                          const unsigned char *inp, size_t len)
 {
+    printf("chacha_cipher in file e_chacha20_poly1305.c\n");
     EVP_CHACHA_KEY *key = data(ctx);
     unsigned int n, rem, ctr32;
 
@@ -104,6 +105,7 @@ static int chacha_cipher(EVP_CIPHER_CTX *ctx, unsigned char *out,
             ctr32 = 0;
         }
         blocks *= CHACHA_BLK_SIZE;
+        printf("About to perform chacha20_ctr32\n");
         ChaCha20_ctr32(out, inp, blocks, key->key.d, key->counter);
         len -= blocks;
         inp += blocks;
@@ -115,6 +117,7 @@ static int chacha_cipher(EVP_CIPHER_CTX *ctx, unsigned char *out,
 
     if (rem) {
         memset(key->buf, 0, sizeof(key->buf));
+        printf("About to perform chacha20_ctr32\n");
         ChaCha20_ctr32(key->buf, key->buf, CHACHA_BLK_SIZE,
                        key->key.d, key->counter);
         for (n = 0; n < rem; n++)
@@ -168,6 +171,7 @@ static int chacha20_poly1305_init_key(EVP_CIPHER_CTX *ctx,
                                       const unsigned char *inkey,
                                       const unsigned char *iv, int enc)
 {
+    printf("Here we are encrypting INIT KEYY CHACHAPOLY!!!\n\n\n\n\n\n\n\n\n\n\n\n");
     EVP_CHACHA_AEAD_CTX *actx = aead_data(ctx);
 
     if (!inkey && !iv)
@@ -364,6 +368,7 @@ static const unsigned char zero[CHACHA_BLK_SIZE] = { 0 };
 static int chacha20_poly1305_cipher(EVP_CIPHER_CTX *ctx, unsigned char *out,
                                     const unsigned char *in, size_t len)
 {
+    printf("Here we are encrypting CHACHAPOLY!!!\n\n\n\n\n\n\n\n\n\n\n\n");
     EVP_CHACHA_AEAD_CTX *actx = aead_data(ctx);
     size_t rem, plen = actx->tls_payload_length;
 

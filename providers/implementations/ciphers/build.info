@@ -5,7 +5,7 @@
 # The latter may become legacy sooner, so it's comfortable to have two
 # variables already now, to switch the non-FIPSable TDES to legacy if needed.
 
-$COMMON_GOAL=../../libcommon.a
+$COMMON_GOAL=../../libcommon.a /home/carlos/openssl/gf2x/libgf2x-local.a
 
 $NULL_GOAL=../../libdefault.a
 $AES_GOAL=../../libdefault.a ../../libfips.a
@@ -200,9 +200,9 @@ ENDIF
 
 IF[{- !$disabled{chacha} -}]
   SOURCE[$CHACHA_GOAL]=\
-      cipher_chacha20.c cipher_chacha20_hw.c
+      cipher_chacha20.c cipher_chacha20_hw.c $COMMON_GOAL
  IF[{- !$disabled{poly1305} -}]
   SOURCE[$CHACHAPOLY_GOAL]=\
-      cipher_chacha20_poly1305.c cipher_chacha20_poly1305_hw.c
+      cipher_chacha20_poly1305.c cipher_chacha20_poly1305_hw.c $COMMON_GOAL
  ENDIF
 ENDIF

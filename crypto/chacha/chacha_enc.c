@@ -67,7 +67,8 @@ static void chacha20_core(chacha_buf *output, const u32 input[16])
     u32 x[16];
     int i;
     DECLARE_IS_ENDIAN;
-
+    printf("Core of chacha where encryption happens\n chacha_enc.c");
+    printf("\n chacha_core performs 20 rounds of ChaCha on the input words in|input| and writes the 64 output bytes to |output|.\n");
     memcpy(x, input, sizeof(x));
 
     for (i = 20; i > 0; i -= 2) {
@@ -101,7 +102,7 @@ void ChaCha20_ctr32(unsigned char *out, const unsigned char *inp, size_t len,
     u32 input[16];
     chacha_buf buf;
     size_t todo, i;
-
+    printf("\nchacha_enc\n\n\n\n\n\n\n\n\n\n\n");
     /* sigma constant "expand 32-byte k" in little-endian encoding */
     input[0] = ((u32)ossl_toascii('e')) | ((u32)ossl_toascii('x') << 8)
                | ((u32)ossl_toascii('p') << 16)
@@ -135,10 +136,23 @@ void ChaCha20_ctr32(unsigned char *out, const unsigned char *inp, size_t len,
         if (len < todo)
             todo = len;
 
+        printf("Before encryption: ");
+        for (i = 0; i < todo; i++) {
+            printf("%02x ", inp[i]);
+        }
+        printf("\n");
+
         chacha20_core(&buf, input);
 
         for (i = 0; i < todo; i++)
             out[i] = inp[i] ^ buf.c[i];
+
+        printf("After encryption: ");
+        for (i = 0; i < todo; i++) {
+            printf("%02x ", out[i]);
+        }
+        printf("\n");
+
         out += todo;
         inp += todo;
         len -= todo;

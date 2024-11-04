@@ -2788,6 +2788,8 @@ static int aes_gcm_ctrl(EVP_CIPHER_CTX *c, int type, int arg, void *ptr)
 static int aes_gcm_init_key(EVP_CIPHER_CTX *ctx, const unsigned char *key,
                             const unsigned char *iv, int enc)
 {
+    printf("About to use aes init key\n\n\n\n\n\n\n\n");
+
     EVP_AES_GCM_CTX *gctx = EVP_C_DATA(EVP_AES_GCM_CTX,ctx);
 
     if (iv == NULL && key == NULL)
@@ -2875,7 +2877,8 @@ static int aes_gcm_init_key(EVP_CIPHER_CTX *ctx, const unsigned char *key,
 
 static int aes_gcm_tls_cipher(EVP_CIPHER_CTX *ctx, unsigned char *out,
                               const unsigned char *in, size_t len)
-{
+{   
+    printf("About to use aes ggcm tls \n\n\n\n\n\n\n\n");
     EVP_AES_GCM_CTX *gctx = EVP_C_DATA(EVP_AES_GCM_CTX,ctx);
     int rv = -1;
     /* Encrypt/decrypt must be performed in place */
@@ -2919,7 +2922,7 @@ static int aes_gcm_tls_cipher(EVP_CIPHER_CTX *ctx, unsigned char *out,
             if (len >= 32 && AES_GCM_ASM(gctx)) {
                 if (CRYPTO_gcm128_encrypt(&gctx->gcm, NULL, NULL, 0))
                     return -1;
-
+                printf("\nAbout to use AES to encrypt 1\n");
                 bulk = AES_gcm_encrypt(in, out, len,
                                        gctx->gcm.key,
                                        gctx->gcm.Yi.c, gctx->gcm.Xi.u);
@@ -2937,7 +2940,7 @@ static int aes_gcm_tls_cipher(EVP_CIPHER_CTX *ctx, unsigned char *out,
             if (len >= 32 && AES_GCM_ASM2(gctx)) {
                 if (CRYPTO_gcm128_encrypt(&gctx->gcm, NULL, NULL, 0))
                     return -1;
-
+                printf("\nAbout to use AES to encrypt 2\n");
                 bulk = AES_gcm_encrypt(in, out, len,
                                        gctx->gcm.key,
                                        gctx->gcm.Yi.c, gctx->gcm.Xi.u);
@@ -3034,6 +3037,7 @@ static int aes_gcm_iv_generate(EVP_AES_GCM_CTX *gctx, int offset)
 static int aes_gcm_cipher(EVP_CIPHER_CTX *ctx, unsigned char *out,
                           const unsigned char *in, size_t len)
 {
+    printf("AES CIPHERRRRRRRRRRR \n\n\n\n\n");
     EVP_AES_GCM_CTX *gctx = EVP_C_DATA(EVP_AES_GCM_CTX,ctx);
 
     /* If not set up, return error */
@@ -3075,7 +3079,7 @@ static int aes_gcm_cipher(EVP_CIPHER_CTX *ctx, unsigned char *out,
 
                     if (CRYPTO_gcm128_encrypt(&gctx->gcm, in, out, res))
                         return -1;
-
+                    printf("\nAbout to use AES to encrypt 3\n");
                     bulk = AES_gcm_encrypt(in + res,
                                            out + res, len - res,
                                            gctx->gcm.key, gctx->gcm.Yi.c,
@@ -3097,7 +3101,7 @@ static int aes_gcm_cipher(EVP_CIPHER_CTX *ctx, unsigned char *out,
 
                     if (CRYPTO_gcm128_encrypt(&gctx->gcm, in, out, res))
                         return -1;
-
+                    printf("\nAbout to use AES to encrypt 4\n");
                     bulk = AES_gcm_encrypt(in + res,
                                            out + res, len - res,
                                            gctx->gcm.key, gctx->gcm.Yi.c,

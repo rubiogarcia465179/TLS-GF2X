@@ -772,7 +772,9 @@ int CRYPTO_gcm128_aad(GCM128_CONTEXT *ctx, const unsigned char *aad,
 int CRYPTO_gcm128_encrypt(GCM128_CONTEXT *ctx,
                           const unsigned char *in, unsigned char *out,
                           size_t len)
-{
+{   
+
+    printf("Here we are encrypting GCM 128!!!\n\n\n\n\n\n\n\n\n\n\n\n");
     DECLARE_IS_ENDIAN;
     unsigned int n, ctr, mres;
     size_t i;

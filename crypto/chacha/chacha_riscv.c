@@ -51,6 +51,7 @@ void ChaCha20_ctr32_v_zbb(unsigned char *out, const unsigned char *inp,
 void ChaCha20_ctr32(unsigned char *out, const unsigned char *inp, size_t len,
                     const unsigned int key[8], const unsigned int counter[4])
 {
+    printf("chacha20 inside fiule chacha_riscv.c\n");
     if (len > CHACHA_BLK_SIZE && RISCV_HAS_ZBB() && riscv_vlen() >= 128) {
         if (RISCV_HAS_ZVKB()) {
             ChaCha20_ctr32_v_zbb_zvkb(out, inp, len, key, counter);

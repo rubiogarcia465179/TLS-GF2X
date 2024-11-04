@@ -657,6 +657,8 @@ void AES_encrypt(const unsigned char *in, unsigned char *out,
                  const AES_KEY *key)
 {
 
+    printf("Here we are encrypting!!!\n\n\n\n\n\n\n\n\n\n\n\n");
+
     const u32 *rk;
     u32 s0, s1, s2, s3, t[4];
     int r;
@@ -870,7 +872,7 @@ void AES_encrypt(const unsigned char *in, unsigned char *out,
 void AES_decrypt(const unsigned char *in, unsigned char *out,
                  const AES_KEY *key)
 {
-
+    printf("Here we are encrypting!!!\n\n\n\n\n\n\n\n\n\n\n\n");
     const u32 *rk;
     u32 s0, s1, s2, s3, t[4];
     int r;
