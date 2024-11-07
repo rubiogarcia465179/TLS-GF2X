@@ -18,20 +18,21 @@ To do:
 2) Make sure gf2x is installed. I can test this in docker container from Mehmet.
 
 
-Testing: 
-client:
+Testing:
 
-
+Executing server:
+```console
 sudo LD_LIBRARY_PATH=/home/carlos/openssl /home/carlos/openssl/apps/openssl s_server     -key key.pem     -cert cert.pem     -tls1_3     -ciphersuites TLS_CHACHA20_POLY1305_SHA256     -accept 443
+```
 
-
-server:
-
+Executing client:
+```console
 LD_LIBRARY_PATH=/home/carlos/openssl /home/carlos/openssl/apps/openssl s_client -connect 127.0.0.1:443 -tls1_3
-
-
+```
+Creating RSA keys:
+```console
 openssl req -x509 -newkey rsa -keyout key.pem -out cert.pem -days 365 -nodes -subj "/C=NL/ST=Nord-Brabant/L=Eindhoven/O=Localhost/CN=Localhost.com"
-
+```
 ----
 
 [![openssl logo]][www.openssl.org]
