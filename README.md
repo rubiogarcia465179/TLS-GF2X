@@ -17,6 +17,21 @@ To do:
 1) Modify build.info, or whatever makefile needed to link chachapoly to the gfx2 library. I think I did this already.
 2) Make sure gf2x is installed. I can test this in docker container from Mehmet.
 
+
+Testing: 
+client:
+
+
+sudo LD_LIBRARY_PATH=/home/carlos/openssl /home/carlos/openssl/apps/openssl s_server     -key key.pem     -cert cert.pem     -tls1_3     -ciphersuites TLS_CHACHA20_POLY1305_SHA256     -accept 443
+
+
+server:
+
+LD_LIBRARY_PATH=/home/carlos/openssl /home/carlos/openssl/apps/openssl s_client -connect 127.0.0.1:443 -tls1_3
+
+
+openssl req -x509 -newkey rsa -keyout key.pem -out cert.pem -days 365 -nodes -subj "/C=NL/ST=Nord-Brabant/L=Eindhoven/O=Localhost/CN=Localhost.com"
+
 ----
 
 [![openssl logo]][www.openssl.org]
