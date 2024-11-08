@@ -110,6 +110,65 @@ static int chacha20_cipher(PROV_CIPHER_CTX *bctx, unsigned char *out, const unsi
 - Have latest version of Openssl runnning. This can be done via a dockerfile, located in the server, which download this custom repository, or by download this repository into WSL. 
 - Compile and build OpenSSL as per default instructions (e.g., ./Configure, make, make install)
 
+Workflow for installing openssl - WSL
+```console
+git clone https://github.com/rubiogarcia465179/TLS-GF2X.git
+cd TLS-GF2X/
+./Configure
+make clean
+make
+make install
+```
+
+Workflow for installing openssl and gf2x - Dockerilfe: Installing openssl does not work because gf2x is not recognized. Added comments on Openssl build commands for debugging.
+```console
+FROM ubuntu:20.04
+
+# Set the working directory
+WORKDIR /app
+
+RUN apt-get update && \
+    apt-get install -y software-properties-common && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN apt-get update && apt-get -y --no-install-recommends install \
+    build-essential \
+    clang \
+    cmake \
+    gdb \
+    wget \
+    libtool \
+    texinfo \
+    libc++-12-dev \
+    valgrind \
+    git
+
+WORKDIR /app
+RUN apt-get update
+RUN apt-get install -y unzip g++ make automake
+RUN wget https://gitlab.inria.fr/gf2x/gf2x/-/archive/master/gf2x-master.tar.gz
+RUN gunzip gf2x-master.tar.gz
+RUN mkdir gf2x  && tar xf gf2x-master.tar -C gf2x --strip-components 1
+WORKDIR /app/gf2x
+RUN libtoolize &&  aclocal && autoconf && autoheader &&  automake --add-missing
+RUN ./configure && make
+RUN make check
+RUN make tune-lowlevel && make tune-toom && make tune-fft; exit 0
+RUN make install
+RUN ldconfig
+WORKDIR /home
+RUN git clone -b master https://github.com/rubiogarcia465179/TLS-GF2X.git
+#RUN cd TLS-GF2X/
+WORKDIR /home/TLS-GF2X
+RUN pwd
+RUN apt-get install -y autoconf
+#RUN ./Configure
+#RUN make clean
+#RUN make
+
+```
+
+
 ## Running the Custom OpenSSL Environment
 
 ### Step 1: Generate Keys and Certificates
