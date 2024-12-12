@@ -308,3 +308,8 @@ void set_bit(uint64_t* bits, uint64_t i, bool flag);
  * @return uint64_t The extracted bits combined into a single uint64_t.
  */
 uint64_t extract_bits(uint64_t off, const uint64_t *bits);
+bool get_bit_scalar(uint64_t bits, int i);
+uint64_t extract_bits_scalars(int off, uint64_t a0, uint64_t a1);
+uint64_t set_bit_scalar(uint64_t bits, int i, bool flag);
+
+
