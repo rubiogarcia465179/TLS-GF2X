@@ -11,6 +11,13 @@
 
 #include "include/crypto/poly1305.h"
 #include "cipher_chacha20.h"
+#include <time.h>
+#include <omp.h>
+#include <string.h>
+#include <assert.h>
+#include <stdbool.h>
+
+#include "gf2x.h"
 
 #define NO_TLS_PAYLOAD_LENGTH ((size_t)-1)
 #define CHACHA20_POLY1305_IVLEN 12
@@ -248,6 +255,7 @@ void simplemult_gf2x(uint64_t *c, uint64_t *a, unsigned terms_a,
 void simplemult_gf2x_par(uint64_t *c, uint64_t *a, unsigned terms_a,
                          uint64_t *b, unsigned terms_b, uint64_t *d,
                          unsigned chunkSize, omp_lock_t *locks);
+
 
 // Function Declarations for Encryption
 
