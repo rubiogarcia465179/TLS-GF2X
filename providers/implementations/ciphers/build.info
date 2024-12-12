@@ -5,7 +5,6 @@
 # The latter may become legacy sooner, so it's comfortable to have two
 # variables already now, to switch the non-FIPSable TDES to legacy if needed.
 
-$COMMON_GOAL=../../libcommon.a /app/gf2x/libgf2x-local.a
 
 $NULL_GOAL=../../libdefault.a
 $AES_GOAL=../../libdefault.a ../../libfips.a
