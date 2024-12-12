@@ -347,6 +347,7 @@ if (in != NULL) { /* aad or text */
             printf("\nAbout to encrypt....\n");
             /*ChaCha20_ctr32(out, in, plen, ctx->chacha.key.d, ctx->chacha.counter); Take this function as example of how chachapoly does things....*/
             entropic_encryption(in, out, plen, ctx->chacha.key.d, 256);
+            printf("\nFinished entropic encryption\n");
             //ctx->chacha.base.hw->cipher(&ctx->chacha.base, out, in, plen); /*Where chacha encryption happens. This cipher is effectively locate3d at cipher_chacha20_hw.c, inside function chacha20_cipher*/
             Poly1305_Update(poly, out, plen);
             printf("\nEncryption finished...\n");
@@ -1256,14 +1257,14 @@ void entropic_encryption(const unsigned char *in, unsigned char *out, size_t len
     uint64_t *chunks = NULL;
     uint64_t *final_key = NULL;
 
-
+    printf("\nInisde entropic encryption 1\n");
     public_string = (uint64_t *)aligned_alloc(32, sizeof(uint64_t) * lenM_64);
     if (NULL == public_string) {
         fprintf(stderr, "entropic_encryption | alloc public_string fail.\n");
         exit(-1);
     }
     random_bytes_(public_string, lenM_64);
-
+    printf("\nInisde entropic encryption 2\n");
     // Memory allocation for the multiplication result
     uint64_t lenR = lenM + len_key;
     uint64_t lenR_64 = lenk_64 + lenM_64;
@@ -1281,6 +1282,7 @@ void entropic_encryption(const unsigned char *in, unsigned char *out, size_t len
         fprintf(stderr, "entropic_encryption | alloc chunks fail.\n");
         exit(-1);
     }
+        printf("\nInisde entropic encryption 3\n");
 
     // Perform binary polynomial multiplication of the key and public string
     simplemult_gf2x(mult_result, public_string, lenM_64, (uint64_t *)key, lenk_64, chunks, chunkSize);
