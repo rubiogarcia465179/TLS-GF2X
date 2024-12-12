@@ -207,17 +207,13 @@ Nonetheless, I see the following problem. Things do not compile.
 
 second option: Add ./Conifgure EX_LIBS=-lgf2x
 
-third option: Change where BIN_EX_LIBS is defined and add lgf2x
+third option: Change where BIN_EX_LIBS is defined and add lgf2x:
 
-```console
+**If I do this, it works always: `BIN_EX_LIBS=$(CNF_EX_LIBS) $(EX_LIBS) -lgf2x` in the openssl Makefile generated after executing ./Configure**
 
-BIN_EX_LIBS = $(EX_LIBS).....
+to test:
 
-to
-
-BIN_EX_LIBS = $(EX_LIBS) -lgf2x
-
-```
+Openssl custom is located at: `root@62a07dd4fc73:/home/TLS-GF2X/apps# /home/TLS-GF2X/apps/openssl version -a`
 
 
 
@@ -267,6 +263,48 @@ apps/progs.h: apps/progs.pl apps/progs.c
 
 ```
 
+```console
+fuzz/acert-test: fuzz/acert-test-bin-acert.o \
+                 fuzz/acert-test-bin-test-corpus.o libcrypto.so
+        rm -f fuzz/acert-test
+        $${LDCMD:-$(CC)} $(BIN_CFLAGS) -L. $(BIN_LDFLAGS) \
+                -o fuzz/acert-test \
+                fuzz/acert-test-bin-acert.o \
+                fuzz/acert-test-bin-test-corpus.o \
+                -lcrypto -lgf2x $(BIN_EX_LIBS)
+
+```
+```console
+
+fuzz/asn1-test: fuzz/asn1-test-bin-asn1.o fuzz/asn1-test-bin-fuzz_rand.o \
+                fuzz/asn1-test-bin-test-corpus.o libssl.so libcrypto.so
+        rm -f fuzz/asn1-test
+        $${LDCMD:-$(CC)} $(BIN_CFLAGS) -L. $(BIN_LDFLAGS) \
+                -o fuzz/asn1-test \
+                fuzz/asn1-test-bin-asn1.o fuzz/asn1-test-bin-fuzz_rand.o \
+                fuzz/asn1-test-bin-test-corpus.o \
+                -lssl -lcrypto -lgf2x $(BIN_EX_LIBS)
+
+```
+
+```console
+
+fuzz/asn1parse-test: fuzz/asn1parse-test-bin-asn1parse.o \
+                     fuzz/asn1parse-test-bin-test-corpus.o libcrypto.so
+        rm -f fuzz/asn1parse-test
+        $${LDCMD:-$(CC)} $(BIN_CFLAGS) -L. $(BIN_LDFLAGS) \
+                -o fuzz/asn1parse-test \
+                fuzz/asn1parse-test-bin-asn1parse.o \
+                fuzz/asn1parse-test-bin-test-corpus.o \
+                -lcrypto -lgf2x $(BIN_EX_LIBS)
+
+```
+
+---
+
+If I do this, it works always: `BIN_EX_LIBS=$(CNF_EX_LIBS) $(EX_LIBS) -lgf2x` in the openssl Makefile generated after executing ./Configure
+
+
 ## Running the Custom OpenSSL Environment
 
 ### Step 1: Generate Keys and Certificates
@@ -278,7 +316,7 @@ openssl req -x509 -newkey rsa -keyout key.pem -out cert.pem -days 365 -nodes -su
 ### Step 2: Start the OpenSSL Server
 Run the server with the following command:
 ```bash
-sudo LD_LIBRARY_PATH=**/path/to/your/openssl** /path/to/your/openssl/apps/openssl s_server \
+LD_LIBRARY_PATH=/home/TLS-GF2X /home/TLS-GF2X/apps/openssl s_server \
     -key key.pem \
     -cert cert.pem \
     -tls1_3 \
@@ -289,7 +327,7 @@ sudo LD_LIBRARY_PATH=**/path/to/your/openssl** /path/to/your/openssl/apps/openss
 ### Step 3: Connect the Client
 Connect to the server using the OpenSSL client:
 ```bash
-LD_LIBRARY_PATH=**/path/to/your/openssl** /path/to/your/openssl/apps/openssl s_client -connect 127.0.0.1:443 -tls1_3
+LD_LIBRARY_PATH=/home/TLS-GF2X /home/TLS-GF2X/apps/openssl s_client -connect 127.0.0.1:443 -tls1_3
 ```
 
 ## To-Do List
