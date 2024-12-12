@@ -271,14 +271,7 @@ void simplemult_gf2x_par(uint64_t *c, uint64_t *a, unsigned terms_a,
 void entropic_encryption(const unsigned char *in, unsigned char *out,
                         size_t lenM, const void *key, size_t len_key);
 
-// gf2x.h
-#ifndef GF2X_H
-#define GF2X_H
 
-#include <stdint.h>
-#include <stdbool.h>
-
-// Function Declarations
 
 /**
  * @brief Retrieves the value of a specific bit from an array of bits.
@@ -315,5 +308,3 @@ void set_bit(uint64_t* bits, uint64_t i, bool flag);
  * @return uint64_t The extracted bits combined into a single uint64_t.
  */
 uint64_t extract_bits(uint64_t off, const uint64_t *bits);
-
-#endif // GF2X_H
