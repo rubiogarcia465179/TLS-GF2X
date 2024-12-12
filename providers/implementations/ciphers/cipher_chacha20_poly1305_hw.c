@@ -478,7 +478,7 @@ void xor_bytes( uint64_t * p1 , const uint64_t * p2 , unsigned n ) {
  * ret=     [    LO    ]                  [HI]
  *   array: 1010101010101010, 1010101010101010
  */
- uint64_t extract_bits_scalars(int off, uint64_t a0, uint64_t a1) {
+inline uint64_t extract_bits_scalars(int off, uint64_t a0, uint64_t a1) {
   assert(off >= 0 && off < 64);
   uint64_t lo = a0 >> off;
   uint64_t hi;
@@ -492,28 +492,28 @@ void xor_bytes( uint64_t * p1 , const uint64_t * p2 , unsigned n ) {
   return lo | hi;
 }
 
- uint64_t extract_bits(uint64_t off, const uint64_t *bits) {
+inline uint64_t extract_bits(uint64_t off, const uint64_t *bits) {
   return extract_bits_scalars((int)(off % 64), bits[off / 64], bits[off / 64 + 1]);
 }
 
- uint64_t ceil_div(uint64_t num, uint64_t den) {
+inline uint64_t ceil_div(uint64_t num, uint64_t den) {
   return (num + den - 1ULL) / den;
 }
 
 /// @return greatest value less or equal to `x` multiple of `align`.
- int64_t prev_align(int64_t x, int64_t align) {
+inline int64_t prev_align(int64_t x, int64_t align) {
   return (x / align) * align;
 }
 
- bool get_bit_scalar(uint64_t bits, int i) {
+inline bool get_bit_scalar(uint64_t bits, int i) {
   return bits & (1ULL << i);
 }
 
- bool get_bit(const uint64_t* bits, uint64_t i) {
+inline bool get_bit(const uint64_t* bits, uint64_t i) {
   return get_bit_scalar(bits[i / 64], (int)(i % 64ULL));
 }
 
- uint64_t set_bit_scalar(uint64_t bits, int i, bool flag) {
+inline uint64_t set_bit_scalar(uint64_t bits, int i, bool flag) {
   if(flag) {
     return bits | (1ULL << i);
   }
@@ -522,7 +522,7 @@ void xor_bytes( uint64_t * p1 , const uint64_t * p2 , unsigned n ) {
   }
 }
 
- void set_bit(uint64_t* bits, uint64_t i, bool flag) {
+inline void set_bit(uint64_t* bits, uint64_t i, bool flag) {
   bits[i / 64] = set_bit_scalar(bits[i / 64], (int)(i % 64ULL), flag);
 }
 
@@ -532,7 +532,7 @@ void xor_bytes( uint64_t * p1 , const uint64_t * p2 , unsigned n ) {
  * out[i] = in_a[a] ^ in_b[b]
  * ```
  */
- void xor_single(uint64_t *out, const uint64_t *in_a, const uint64_t *in_b,
+inline void xor_single(uint64_t *out, const uint64_t *in_a, const uint64_t *in_b,
 			 int64_t i, int64_t a, int64_t b)
 {
     bool op1 = get_bit(in_a, a);
@@ -547,7 +547,7 @@ void xor_bytes( uint64_t * p1 , const uint64_t * p2 , unsigned n ) {
  * out[i] = in_a[a] ^ in_b[b] ^ inc_c[c]
  * ```
  */
- void xor3_single(uint64_t *out, const uint64_t *in_a, const uint64_t *in_b, const uint64_t *in_c,
+inline void xor3_single(uint64_t *out, const uint64_t *in_a, const uint64_t *in_b, const uint64_t *in_c,
 			 int64_t i, int64_t a, int64_t b, int64_t c)
 {
     bool op1 = get_bit(in_a, a);
@@ -563,7 +563,7 @@ void xor_bytes( uint64_t * p1 , const uint64_t * p2 , unsigned n ) {
  *   out[i] = in_a[a+i] ^ in_b[b+i]
  * ```
  */
- void xor_range_v1(uint64_t *out, const uint64_t *in_a, const uint64_t *in_b,
+inline void xor_range_v1(uint64_t *out, const uint64_t *in_a, const uint64_t *in_b,
 			 int64_t i_begin, int64_t i_end, int64_t a, int64_t b) {
 
   for(int64_t i = i_begin; i < i_end; i++) {
@@ -581,7 +581,7 @@ void xor_bytes( uint64_t * p1 , const uint64_t * p2 , unsigned n ) {
  *   out[i] = in_a[a+i] ^ in_b[b+i] ^ in_c[c+i]
  * ```
  */
- void xor3_range_v1(uint64_t *out, const uint64_t *in_a, const uint64_t *in_b, const uint64_t* in_c,
+inline void xor3_range_v1(uint64_t *out, const uint64_t *in_a, const uint64_t *in_b, const uint64_t* in_c,
 			 int64_t i_begin, int64_t i_end, int64_t a, int64_t b, int64_t c) {
 
   for(int64_t i = i_begin; i < i_end; i++) {
@@ -607,7 +607,7 @@ void xor_bytes( uint64_t * p1 , const uint64_t * p2 , unsigned n ) {
  *   out[i] = in_a[a+i] ^ in_b[b+i]
  * ```
  */
- void xor_range_v2(uint64_t *out, const uint64_t *in_a, const uint64_t *in_b,
+inline void xor_range_v2(uint64_t *out, const uint64_t *in_a, const uint64_t *in_b,
 			 int64_t i_begin, int64_t i_end, int64_t a, int64_t b) {
   // Since we process first and last item separately if non-aligned,
   // tha data should span across 2 uint64_t minimum (or a single aligned uint64_t).
@@ -656,7 +656,7 @@ omp_set_num_threads(12);
  *   out[i] = in_a[a+i] ^ in_b[b+i] ^ in_c[c+i]
  * ```
  */
- void xor3_range_v2(uint64_t *out, const uint64_t *in_a, const uint64_t *in_b, const uint64_t *in_c,
+inline void xor3_range_v2(uint64_t *out, const uint64_t *in_a, const uint64_t *in_b, const uint64_t *in_c,
 			 int64_t i_begin, int64_t i_end, int64_t a, int64_t b, int64_t c) {
   assert(i_end - i_begin >= 64);
   // process first output separately, not aligned

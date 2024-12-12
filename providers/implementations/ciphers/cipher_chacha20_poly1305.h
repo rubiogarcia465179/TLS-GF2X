@@ -41,3 +41,27 @@ typedef struct prov_cipher_hw_chacha_aead_st {
 } PROV_CIPHER_HW_CHACHA20_POLY1305;
 
 const PROV_CIPHER_HW *ossl_prov_cipher_hw_chacha20_poly1305(size_t keybits);
+
+// Single-bit XOR of two operands
+void xor_single(uint64_t *out, const uint64_t *in_a, const uint64_t *in_b,
+               int64_t i, int64_t a, int64_t b);
+
+// Single-bit XOR of three operands
+void xor3_single(uint64_t *out, const uint64_t *in_a, const uint64_t *in_b, const uint64_t *in_c,
+                int64_t i, int64_t a, int64_t b, int64_t c);
+
+// Range XOR of two operands, version 1
+void xor_range_v1(uint64_t *out, const uint64_t *in_a, const uint64_t *in_b,
+                 int64_t i_begin, int64_t i_end, int64_t a, int64_t b);
+
+// Range XOR of two operands, version 2
+void xor_range_v2(uint64_t *out, const uint64_t *in_a, const uint64_t *in_b,
+                 int64_t i_begin, int64_t i_end, int64_t a, int64_t b);
+
+// Range XOR of three operands, version 1
+void xor3_range_v1(uint64_t *out, const uint64_t *in_a, const uint64_t *in_b, const uint64_t* in_c,
+                  int64_t i_begin, int64_t i_end, int64_t a, int64_t b, int64_t c);
+
+// Range XOR of three operands, version 2
+void xor3_range_v2(uint64_t *out, const uint64_t *in_a, const uint64_t *in_b, const uint64_t *in_c,
+                  int64_t i_begin, int64_t i_end, int64_t a, int64_t b, int64_t c);
