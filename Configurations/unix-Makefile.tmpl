@@ -500,8 +500,8 @@ BIN_CXXFLAGS={- join(' ', $target{bin_cxxflags} || (),
 BIN_LDFLAGS={- join(' ', $target{bin_lflags} || (),
                          @{$config{bin_lflags}},
                          '$(CNF_LDFLAGS)', '$(LDFLAGS)') -}
-BIN_EX_LIBS=$(CNF_EX_LIBS) $(EX_LIBS)
-
+BIN_EX_LIBS=$(CNF_EX_LIBS) $(EX_LIBS) -lgf2x
+# Added gf2x here
 # CPPFLAGS_Q is used for one thing only: to build up buildinf.h
 CPPFLAGS_Q={- $cppflags1 =~ s|([\\"])|\\$1|g;
               $cppflags2 =~ s|([\\"])|\\$1|g;
