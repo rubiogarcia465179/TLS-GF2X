@@ -1172,12 +1172,15 @@ void reduction(int algorithm, uint64_t *poly_R, uint64_t *fin_key, uint64_t lenR
     switch (algorithm)
     {
     case 1:
+        printf("\nEntering reduction 1\n");
         reduction_c1_seq(poly_R, fin_key, lenR_64, lenR, lenDred_64, b);
         break;
     case 2:
+        printf("\nEntering reduction 2\n");
         reduction_c1_par(poly_R, fin_key, lenR_64, lenR, lenDred_64, b);
         break;
     case 3:
+        printf("\nEntering reduction 3\n");
         reduction_c1_batched_seq(poly_R, fin_key, lenR_64, lenR, lenDred_64, b);
         break;
     default:
@@ -1307,6 +1310,8 @@ void entropic_encryption(const unsigned char *in, unsigned char *out, size_t len
     // Reduce the multiplication result
     printf("\nReduction\n");
     reduction(3, mult_result, final_key, lenR_64, lenR, lenM, lenM_64);
+    printf("\nReduction finished\n");
+
     free(mult_result);
     mult_result = NULL;
     printf("\nFinal key generated succesfully\n");
