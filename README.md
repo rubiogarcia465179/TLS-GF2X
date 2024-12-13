@@ -179,12 +179,37 @@ RUN make
 
 After some reserach, we found out that by executing this, we can link all of OpenSSL with GF2X and OpenMP. Use `unset CFLAGS LDFLAGS EX_LIBS` unset if you have set the variables before.
 
+To ensure gf2x library is linked against openSSL, I have added the liking of gf2x library to all OpenSSL though file `Configurations\unix-Makefile.tmpl` where the configure options to create Makefile for OpenSSL are defined. Inside this file, you can now see the following:
+
+```Makefile
+                          '$(CNF_CPPFLAGS)', '$(CPPFLAGS)') -}
+BIN_CFLAGS={- join(' ', $target{bin_cflags} || (),
+                        @{$config{bin_cflags}},
+                        '$(CNF_CFLAGS)', '$(CFLAGS)') -}
+BIN_CXXFLAGS={- join(' ', $target{bin_cxxflags} || (),
+                          @{$config{bin_cxxflags}},
+                          '$(CNF_CXXFLAGS)', '$(CXXFLAGS)') -}
+BIN_LDFLAGS={- join(' ', $target{bin_lflags} || (),
+                         @{$config{bin_lflags}},
+                         '$(CNF_LDFLAGS)', '$(LDFLAGS)') -}
+BIN_EX_LIBS=$(CNF_EX_LIBS) $(EX_LIBS) -lgf2x
+# Added gf2x here
+# CPPFLAGS_Q is used for one thing only: to build up buildinf.h
+CPPFLAGS_Q={- $cppflags1 =~ s|([\\"])|\\$1|g;
+              $cppflags2 =~ s|([\\"])|\\$1|g;
+              $lib_cppflags =~ s|([\\"])|\\$1|g;
+              join(' ', $lib_cppflags || (), $cppflags2 || (),
+                        $cppflags1 || ()) -}
+```
+
+This ensures that a "default" way of installing OpenSSL (below) already allows for gf2x without other manual things required...
+
 ```console
 make clean
 #unset CFLAGS LDFLAGS EX_LIBS
 export CFLAGS="-fopenmp -I/usr/local/include"
 export LDFLAGS="-L/usr/local/lib"
-./Configure EX_LIBS="-lgf2x"
+./Configure
 make
 ```
 
@@ -204,7 +229,8 @@ drwxrwsr-x 3 root staff    4096 Nov  7 14:45 python3.8/
 root@62a07dd4fc73:/home/TLS-GF2X#
 ```
 
-If things above do not work, I can manually make it compile by:
+---
+# If things above do not work, I can manually make it compile by:
 
 1. Execute `./Configure` manually.
 2. `nano Makefile`
@@ -213,7 +239,7 @@ If things above do not work, I can manually make it compile by:
 5. Save the file
 6. `make`
 
-**If I do this, it works always: `BIN_EX_LIBS=$(CNF_EX_LIBS) $(EX_LIBS) -lgf2x` in the openssl Makefile generated after executing ./Configure**. This is because the library gf2x, through -lgf2x, is compiled against the whole OpenSSL project. Maybe not the faster way to build it, but does not make a differece when running the algorithm.
+ This is because the library gf2x, through -lgf2x, is compiled against the whole OpenSSL project. Maybe not the faster way to build it, but does not make a differece when running the algorithm.
 
 ---
 
