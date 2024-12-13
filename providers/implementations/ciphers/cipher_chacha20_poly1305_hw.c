@@ -585,6 +585,7 @@ void xor_bytes( uint64_t * p1 , const uint64_t * p2 , unsigned n ) {
  void xor3_range_v1(uint64_t *out, const uint64_t *in_a, const uint64_t *in_b, const uint64_t* in_c,
 			 int64_t i_begin, int64_t i_end, int64_t a, int64_t b, int64_t c) {
 
+  printf("/naaaerrror/n");
   for(int64_t i = i_begin; i < i_end; i++) {
     bool op1 = get_bit(in_a, i + a);
     bool op2 = get_bit(in_b, i + b);
@@ -1159,7 +1160,7 @@ void reduction_c1_batched_seq(uint64_t *d, uint64_t *Dred, uint64_t lenR_64, uin
         printf("Finished xor3_single for column 0.\n");
 
     }
-
+    printf("About to enter xor3 range select\n");
     xor3_range_select(version, Dred, d, T1, T4, 1, b - 1, 0, 0, -1); // Columns 1 to b - 2
     if(3 * b < lenR){
         printf("Calling xor3_single 2\n");
@@ -1336,7 +1337,7 @@ void entropic_encryption(const unsigned char *in, unsigned char *out, size_t len
 
     // Reduce the multiplication result
     printf("\nReduction\n");
-    reduction(3, mult_result, final_key, lenR_64, lenR, lenM, lenM_64);
+    reduction(2, mult_result, final_key, lenR_64, lenR, lenM, lenM_64);
     printf("\nReduction finished\n");
 
     free(mult_result);
