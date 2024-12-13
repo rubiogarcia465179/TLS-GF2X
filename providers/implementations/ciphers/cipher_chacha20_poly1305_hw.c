@@ -1191,19 +1191,24 @@ void simplemult_gf2x(uint64_t * c, uint64_t * a, unsigned terms_a, uint64_t * b,
 	//unsigned chunkNum  =  terms_a % terms_b ==0 ? terms_a / terms_b : (terms_a / terms_b) +1 ;
 	//printf("chunkNum :%u \n", chunkNum);
 	unsigned chunkIndex;
-	for (unsigned i = 0; i < chunkNum; i++){
+	printf("\nsimplemult_gf2x 1\n");
+    for (unsigned i = 0; i < chunkNum; i++){
 		chunkIndex = i*chunkSize;
 		//printf("chunkIndex :%u \n", chunkIndex);
 
 		//memset(d, 0, chunkSize * 2 * sizeof(uint64_t));
-		
+			printf("\nsimplemult_gf2x 2\n");
 		gf2x_mul(d + chunkIndex*2, a + chunkIndex, chunkSize, b, chunkSize);
 		//printf("d :" ); byte_dump( d , chunkSize *2 ); puts("");
+        	printf("\nsimplemult_gf2x 3\n");
 
 		//printf("Before XOR: c:" ); byte_dump( c , terms_a + terms_b ); puts("");
 		xor_bytes( c + chunkIndex, d + chunkIndex*2, chunkSize*2);
+
+
 		//printf("After XOR: c:" ); byte_dump( c , terms_a + terms_b ); puts("");
 	}
+            	printf("\nsimplemult_gf2x 4: Function finished\n");
 	//printf("End of the function ");
 }
 
