@@ -1292,11 +1292,12 @@ void entropic_encryption(const unsigned char *in, unsigned char *out, size_t len
     // Perform binary polynomial multiplication of the key and public string
     simplemult_gf2x(mult_result, public_string, lenM_64, (uint64_t *)key, lenk_64, chunks, chunkSize);
     free(public_string);
+    printf("\nFree public _ stirng\n");
     public_string = NULL;
 
     free(chunks);
     chunks = NULL;
-
+    printf("\nGen final key\n");
     final_key = (uint64_t *)aligned_alloc(32, sizeof(uint64_t) * lenM_64);
     if (NULL == final_key) {
         fprintf(stderr, "entropic_encryption | alloc final_key fail.\n");
@@ -1304,9 +1305,11 @@ void entropic_encryption(const unsigned char *in, unsigned char *out, size_t len
     }
 
     // Reduce the multiplication result
+    printf("\nReduction\n");
     reduction(3, mult_result, final_key, lenR_64, lenR, lenM, lenM_64);
     free(mult_result);
     mult_result = NULL;
+    printf("\nFinal key generated succesfully\n");
 
     // XOR input (`in`) and `final_key` and write to `out`
     size_t remaining_bytes = lenM % sizeof(uint64_t);
@@ -1324,8 +1327,12 @@ void entropic_encryption(const unsigned char *in, unsigned char *out, size_t len
         }
     }
 
-
+    printf("\nFinal key is free\n");
     free(final_key);
+    printf("\nFinal key is set to NULL now....\n");
     final_key = NULL;
+    printf("\nFinal key just set to null is free\n");
+
+
     
 }
