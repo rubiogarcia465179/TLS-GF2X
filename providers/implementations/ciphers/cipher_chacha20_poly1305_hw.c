@@ -1122,42 +1122,69 @@ void reduction_c1_batched_seq(uint64_t *d, uint64_t *Dred, uint64_t lenR_64, uin
     unsigned lenT1_64 = (b - 1 + 63)/64;
     unsigned lenT4_64 = (b + 63)/64;
     //printf("lenT1_64: %u, lenT4_64: %u \n", lenT1_64, lenT4_64);
+    printf("Function start: lenR_64 = %lu, lenR = %lu, lenDred_64 = %lu, b = %lu\n", lenR_64, lenR, lenDred_64, b);
+    printf("Computed lenT1_64 = %u, lenT4_64 = %u\n", lenT1_64, lenT4_64);
 
     uint64_t * T1 = (uint64_t*)aligned_alloc( 32, sizeof(uint64_t)*lenT1_64);
+    printf("Allocated memory for T1: %p\n", T1);
 	if( NULL == T1 ) { printf("reduction_c1 |alloc T1 fail.\n"); exit(-1); }
 	uint64_t * T4 = (uint64_t*)aligned_alloc( 32, sizeof(uint64_t)*lenT4_64);
+    printf("Allocated memory for T4: %p\n", T4);
 	if( NULL == T4 ) { printf("Main |alloc T4 fail.\n"); exit(-1); }
 
     memset(T1, 0, sizeof(uint64_t) * lenT1_64);
+    printf("Initialized T1 with zeros.\n");
     memset(T4, 0, sizeof(uint64_t) * lenT4_64);
+    printf("Initialized T4 with zeros.\n");
+
 
     int version = 2;
-    
+    printf("Version set to: %d\n", version);
+
+    printf("About to compute a_lastIndex\n");
     int64_t a_lastIndex  = ((b - 1 + 2 * b + 1) < lenR) ? (2 * b + 1) : (lenR - (b - 1));
     int64_t b_lastIndex  = ((b - 1 + 3 * b + 2) < lenR) ? (3 * b + 2) : (lenR - (b - 1));
     xor_range_select(version, T1, d, d, 0, b - 1, a_lastIndex, b_lastIndex); // Compute T1
-
+    printf("Computed a_lastIndex = %ld, b_lastIndex = %ld for T1 computation.\n", a_lastIndex, b_lastIndex);
+    printf("About to compute a_lastIndex 2\n");
     a_lastIndex  = ((b + 2 * b + 1) < lenR) ? (2 * b + 1) :  (lenR - (b));
     b_lastIndex  = ((b + 3 * b + 1) < lenR) ? (3 * b + 1) :  (lenR - (b));    
+    printf("Computed a_lastIndex = %ld, b_lastIndex = %ld for T4 computation.\n", a_lastIndex, b_lastIndex);
     xor_range_select(version, T4, d, d, 0, b, a_lastIndex, b_lastIndex); // Compute T4
+    printf("xor_range_select for T4 completed.\n");
 
     if(3 * b + 1 < lenR){
+        printf("Calling xor3_single for column 0.\n");
         xor3_single(Dred, d, T1, d, 0, 0, 0, 3 * b + 1); // Column 0
+        printf("Finished xor3_single for column 0.\n");
+
     }
 
     xor3_range_select(version, Dred, d, T1, T4, 1, b - 1, 0, 0, -1); // Columns 1 to b - 2
     if(3 * b < lenR){
+        printf("Calling xor3_single 2\n");
         xor3_single(Dred, d, d, T4, b - 1, b - 1, 3 * b, b - 2);
+        printf("Finished xor3_single for column 0.\n");
     }
-
+    printf("xor3_single\n");
     xor3_single(Dred, d, T1, T4, b, b, 0, b - 1);
+    printf("xor3_single finished\n");
+    printf("xor3_range select\n");
     xor3_range_select(version, Dred, d, T1, T1, b + 1, 2 * b - 1, 0, -b, -b - 1); // Columns b + 1 to 2b - 2
+    printf("xor3_range select finished\n");
     if(3 * b < lenR){
+        printf("xor3_single for column b+ 1 \n");
         xor3_single(Dred, d, d, T1, 2 * b - 1, 2 * b - 1, 3 * b, b - 2);
+        printf("xor3_single for column b+ 1 finished \n");
+
     }
      if((3 * b + 1 < lenR) &&  (3 * b < lenR)){
+                printf("xor3_single for column b+ 1 (2) \n");
         xor3_single(Dred, d, d, d, 2 * b, 2 * b, 3 * b + 1, 3 * b);
+        printf("xor3_single for column b+ 1 finished (2) \n");
+
     }
+    printf("\nAbout to free T1 and T4\n");
     free(T1);
     free(T4); 
 
