@@ -346,6 +346,29 @@ if (in != NULL) { /* aad or text */
             printf("Plaintext: %.*s\n", plen, in);
             printf("\nAbout to encrypt....\n");
             /*ChaCha20_ctr32(out, in, plen, ctx->chacha.key.d, ctx->chacha.counter); Take this function as example of how chachapoly does things....*/
+            // Example call: entropic_encryption(in, out, plen, ctx->chacha.key.d, 256);
+            printf("DEBUG: Starting entropic_encryption. Logging raw things\n");
+            printf("Input message (hex): ");
+            for (size_t i = 0; i < plen; i++) {
+                printf("%02x ", in[i]);  // Print each byte of the input message
+            }
+            printf("\n");
+
+            printf("Output buffer before encryption (hex): ");
+            for (size_t i = 0; i < plen; i++) {
+                printf("%02x ", out[i]);  // Print each byte of the output buffer before encryption
+            }
+            printf("\n");
+
+            printf("Input message length: %zu\n", plen);
+
+            printf("Encryption key (hex): ");
+            for (size_t i = 0; i < 256 / 8; i++) {  // Assuming the key length is 256 bits (32 bytes)
+                printf("%02x ", ctx->chacha.key.d[i]);
+            }
+            printf("\n");
+
+            printf("Key length: 256 bits\n");
             entropic_encryption(in, out, plen, ctx->chacha.key.d, 256);
             printf("\nFinished entropic encryption\n");
             //ctx->chacha.base.hw->cipher(&ctx->chacha.base, out, in, plen); /*Where chacha encryption happens. This cipher is effectively locate3d at cipher_chacha20_hw.c, inside function chacha20_cipher*/
