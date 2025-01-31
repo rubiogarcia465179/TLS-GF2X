@@ -1489,20 +1489,20 @@ void entropic_decryption(const unsigned char *in, unsigned char *out, size_t len
     unsigned int chunkSize = 0, chunkNum = 0;
     printf("\nInisde entropic decryption 1\n");
     // Lengths in 64-bit chunks
-    uint64_t lenM_64 = (lenM / 2 + 63) / 64; // lenM is now 2*original_length (enc_msg + public_string)
+    uint64_t lenM_64 = (lenM + 63) / 64; // lenM is now 2*original_length (enc_msg + public_string)
     uint64_t lenk_64 = (len_key + 63) / 64;
 
     // Separate encrypted message and public string
     const uint64_t *enc_msg = (const uint64_t *)in;
-    const uint64_t *public_string = (const uint64_t *)(in + lenM / 2);
+    const uint64_t *public_string = (const uint64_t *)(in + lenM);
     printf("\nInisde entropic decryption 2\n");
     // Allocate memory for the multiplication result
-    uint64_t lenR = (lenM / 2) + len_key;
+    uint64_t lenR = (lenM) + len_key;
     uint64_t lenR_64 = lenk_64 + lenM_64;
     uint64_t *mult_result = (uint64_t *)aligned_alloc(32, sizeof(uint64_t) * lenR_64);
     if (NULL == mult_result) {
         fprintf(stderr, "entropic_decryption | alloc mult_result fail.\n");
-        exit(-1);
+        return;  // Or handle error properly
     }
     printf("\nInisde entropic decryption 3\n");
     chunkSize = lenk_64;
@@ -1528,13 +1528,19 @@ void entropic_decryption(const unsigned char *in, unsigned char *out, size_t len
     printf("\nInisde entropic decryption 7 - Before reduction\n");
     // Reduce the multiplication result
 //    reduction(2, mult_result, final_key, lenR_64, lenR, lenM / 2, lenM_64);
+    if (lenM_64 > lenR_64) {
+        fprintf(stderr, "entropic_decryption | Memory corruption risk.\n");
+        return;
+    }
     reduction(2, mult_result, final_key, lenR_64, lenR, lenM, lenM_64);
+
     free(mult_result);
     mult_result = NULL;
 
     // XOR encrypted message (`enc_msg`) and `final_key` and write to `out`
-    size_t remaining_bytes = (lenM / 2) % sizeof(uint64_t);
-    for (unsigned i = 0; i < lenM_64 - 1; ++i) {
+    size_t remaining_bytes = lenM % sizeof(uint64_t);
+
+    for (unsigned i = 0; i < lenM_64; ++i) {
         ((uint64_t *)out)[i] = enc_msg[i] ^ final_key[i];
     }
 
@@ -1544,7 +1550,7 @@ void entropic_decryption(const unsigned char *in, unsigned char *out, size_t len
         unsigned char *out_bytes = (unsigned char *)out;
         unsigned char *final_key_bytes = (unsigned char *)final_key;
         for (size_t i = 0; i < remaining_bytes; ++i) {
-            out_bytes[lenM / 2 - remaining_bytes + i] = enc_msg_bytes[lenM / 2 - remaining_bytes + i] ^ final_key_bytes[lenM / 2 - remaining_bytes + i];
+            out_bytes[lenM - remaining_bytes + i] = enc_msg_bytes[lenM - remaining_bytes + i] ^ final_key_bytes[lenM - remaining_bytes + i];
         }
     }
 

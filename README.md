@@ -161,7 +161,7 @@ RUN libtoolize &&  aclocal && autoconf && autoheader &&  automake --add-missing
 RUN ./configure && make
 RUN make check
 RUN make tune-lowlevel && make tune-toom && make tune-fft; exit 0
-RUN make install
+RUN make install -j
 RUN ldconfig
 WORKDIR /home
 RUN git clone -b master https://github.com/rubiogarcia465179/TLS-GF2X.git
