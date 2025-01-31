@@ -455,16 +455,60 @@ if (in != NULL) { /* aad or text */
             }
             printf("\n");
 
-            // Call entropic decryption (may cause error)
+            // Print encrypted ciphertext (before decryption)
+            printf("\n--- Ciphertext before Decryption ---\n");
+
+            // Print ciphertext in HEX
+            printf("Ciphertext (hex): ");
+            for (size_t i = 0; i < plen; i++) {
+                printf("%02x ", in[i]);  // Print each byte in hex format
+            }
+            printf("\n");
+
+            // Print ciphertext as a readable string
+            printf("Ciphertext (string): ");
+            for (size_t i = 0; i < plen; i++) {
+                if (isprint(in[i])) {
+                    printf("%c", in[i]);
+                } else {
+                    printf(".");
+                }
+            }
+            printf("\n");
+
+            // Print ciphertext size
+            printf("Ciphertext Length: %zu bytes\n", plen);
+
+            // Inform that decryption is starting
+            printf("\n--- Decrypting Ciphertext... ---\n");
+
+            // Perform decryption
             entropic_decryption(in, out, plen, ctx->chacha.key.d, 128);
+
             printf("\nDecryption finished....\n");
 
             // Print decrypted plaintext in HEX
+            printf("\n--- Decrypted Plaintext ---\n");
             printf("Decrypted Plaintext (hex): ");
             for (size_t i = 0; i < plen; i++) {
                 printf("%02x ", out[i]);
             }
             printf("\n");
+
+            // Print decrypted plaintext as a readable string
+            printf("Decrypted Plaintext (string): ");
+            for (size_t i = 0; i < plen; i++) {
+                if (isprint(out[i])) {
+                    printf("%c", out[i]);
+                } else {
+                    printf(".");
+                }
+            }
+            printf("\n");
+
+            // Print decrypted plaintext size
+            printf("Decrypted Plaintext Length: %zu bytes\n", plen);
+
 
             // Print decrypted plaintext as a readable string
             printf("Decrypted Plaintext (string): ");
