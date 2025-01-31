@@ -341,46 +341,80 @@ if (in != NULL) { /* aad or text */
         else if (inl != plen + POLY1305_BLOCK_SIZE)
             goto err;
 
-        if (bctx->enc) { /* plaintext */
-            printf("\nHere, the input is the plaintext, and we are going to encrypt.\n");
-            printf("Plaintext: %.*s\n", plen, in);
-            printf("\nAbout to encrypt....\n");
-            /*ChaCha20_ctr32(out, in, plen, ctx->chacha.key.d, ctx->chacha.counter); Take this function as example of how chachapoly does things....*/
-            // Example call: entropic_encryption(in, out, plen, ctx->chacha.key.d, 256);
-            printf("DEBUG: Starting entropic_encryption. Logging raw things\n");
-            printf("Input message (hex): ");
-            for (size_t i = 0; i < plen; i++) {
-                printf("%02x ", in[i]);  // Print each byte of the input message
-            }
-            printf("\n");
+if (bctx->enc) { /* plaintext */
+    printf("\n\n========== Encryption Process ==========\n\n");
 
-            printf("Output buffer before encryption (hex): ");
-            for (size_t i = 0; i < plen; i++) {
-                printf("%02x ", out[i]);  // Print each byte of the output buffer before encryption
-            }
-            printf("\n");
+    // Print input plaintext before encryption
+    printf("--- Input Plaintext ---\n");
 
-            printf("Input message length: %zu\n", plen);
+    // Print plaintext in HEX
+    printf("Plaintext (hex): ");
+    for (size_t i = 0; i < plen; i++) {
+        printf("%02x ", in[i]);
+    }
+    printf("\n");
 
-            printf("Encryption key (hex): ");
-            for (size_t i = 0; i < 256 / 8; i++) {  // Assuming the key length is 256 bits (32 bytes)
-                printf("%02x ", ctx->chacha.key.d[i]);
-            }
-            printf("\n");
+    // Print plaintext as a readable string
+    printf("Plaintext (string): ");
+    for (size_t i = 0; i < plen; i++) {
+        printf("%c", isprint(in[i]) ? in[i] : '.');
+    }
+    printf("\n");
 
-            printf("Key length: 256 bits\n");
-            entropic_encryption(in, out, plen, ctx->chacha.key.d, 256);
-            printf("\nFinished entropic encryption\n");
-            //ctx->chacha.base.hw->cipher(&ctx->chacha.base, out, in, plen); /*Where chacha encryption happens. This cipher is effectively locate3d at cipher_chacha20_hw.c, inside function chacha20_cipher*/
-            Poly1305_Update(poly, out, plen);
-            printf("\nEncryption finished...\n");
-            printf("\nCiphertext: %.*s\n", plen, out);
-            in += plen;
-            out += plen;
-            ctx->len.text += plen;
-        } else { /* ciphertext */
-            // Print ciphertext in HE
-            printf("\n\n--- Decryption Process ---\n\n");
+    // Print plaintext size
+    printf("Plaintext Length: %zu bytes\n", plen);
+
+    // Determine the size of the encryption key
+    size_t key_size = sizeof(ctx->chacha.key.d);
+
+    // Print the encryption key
+    printf("\n--- Encryption Key ---\n");
+    printf("Encryption Key (hex): ");
+    for (size_t i = 0; i < key_size; i++) {
+        printf("%02x ", ((unsigned char*)ctx->chacha.key.d)[i]);
+    }
+    printf("\n");
+
+    // Print encryption key size in bytes & bits
+    printf("Encryption Key Size: %zu bytes (%zu bits)\n", key_size, key_size * 8);
+
+    // Inform that encryption is starting
+    printf("\n--- Starting Encryption... ---\n");
+
+    // Perform encryption
+    entropic_encryption(in, out, plen, ctx->chacha.key.d, key_size * 8);
+
+    printf("\n--- Encryption Finished ---\n");
+
+    // Print encrypted ciphertext in HEX
+    printf("\n--- Encrypted Ciphertext ---\n");
+    printf("Ciphertext (hex): ");
+    for (size_t i = 0; i < plen; i++) {
+        printf("%02x ", out[i]);
+    }
+    printf("\n");
+
+    // Print encrypted ciphertext as a readable string
+    printf("Ciphertext (string): ");
+    for (size_t i = 0; i < plen; i++) {
+        printf("%c", isprint(out[i]) ? out[i] : '.');
+    }
+    printf("\n");
+
+    // Print encrypted ciphertext size
+    printf("Ciphertext Length: %zu bytes\n", plen);
+
+    // Update buffer pointers
+    in += plen;
+    out += plen;
+    ctx->len.text += plen;
+}
+
+        else { /* ciphertext */
+            printf("\n\n========== Decryption Process ==========\n\n");
+
+            // Print ciphertext before decryption
+            printf("--- Ciphertext Before Decryption ---\n");
 
             // Print ciphertext in HEX
             printf("Ciphertext (hex): ");
@@ -389,94 +423,10 @@ if (in != NULL) { /* aad or text */
             }
             printf("\n");
 
-            // Print ciphertext as a string (if printable)
-            printf("Ciphertext (string): ");
-            for (size_t i = 0; i < plen; i++) {
-                if (isprint(in[i])) {
-                    printf("%c", in[i]);
-                } else {
-                    printf(".");
-                }
-            }
-            printf("\n");
-
-            printf("Ciphertext Length: %zu bytes\n", plen);
-
-            // Print decryption key
-            printf("Decryption Key (hex): ");
-            for (size_t i = 0; i < 32; i++) {  // Assuming 256-bit key
-                printf("%02x ", ((unsigned char*)ctx->chacha.key.d)[i]);
-            }
-            printf("\n");
-
-            printf("Decryption Key Length: 256 bits\n");
-            printf("About to decrypt...\n");
-            printf("Ciphertext (hex): ");
-            for (size_t i = 0; i < plen; i++) {
-                printf("%02x ", in[i]);  // Print each byte in hex format
-            }
-            printf("\n");
-
-            // Print ciphertext as a string (if printable)
-            printf("Ciphertext (string): ");
-            for (size_t i = 0; i < plen; i++) {
-                if (isprint(in[i])) {
-                    printf("%c", in[i]);  // Print character if printable
-                } else {
-                    printf(".");  // Replace non-printable characters with '.'
-                }
-            }
-            printf("\n");
-
-            // Print length of ciphertext
-            printf("Ciphertext length: %zu\n", plen);
-
-            // Print key in HEX
-            printf("Decryption Key (hex): ");
-            for (size_t i = 0; i < 16; i++) {  // Assuming 128-bit key
-                printf("%02x ", ((unsigned char*)ctx->chacha.key.d)[i]);
-            }
-            printf("\n");
-
-            // Print counter values
-
-            printf("\nAbout to decrypt....\n");
-
-            // Debug Poly1305 Update
-            printf("Updating Poly1305 with ciphertext...\n");
-            Poly1305_Update(poly, in, plen);
-
-            printf("Starting entropic decryption...\n");
-
-            // Print output buffer before decryption
-            printf("Output buffer before decryption (hex): ");
-            for (size_t i = 0; i < plen; i++) {
-                printf("%02x ", out[i]);
-            }
-            printf("\n");
-
-
-
-
-
-                    // Print encrypted ciphertext (before decryption)
-            printf("\n--- Ciphertext before Decryption ---\n");
-
-            // Print ciphertext in HEX
-            printf("Ciphertext (hex): ");
-            for (size_t i = 0; i < plen; i++) {
-                printf("%02x ", in[i]);  // Print each byte in hex format
-            }
-            printf("\n");
-
             // Print ciphertext as a readable string
             printf("Ciphertext (string): ");
             for (size_t i = 0; i < plen; i++) {
-                if (isprint(in[i])) {
-                    printf("%c", in[i]);
-                } else {
-                    printf(".");
-                }
+                printf("%c", isprint(in[i]) ? in[i] : '.');
             }
             printf("\n");
 
@@ -494,15 +444,16 @@ if (in != NULL) { /* aad or text */
             }
             printf("\n");
 
-            printf("Decryption Key Size: %zu bytes (%zu bits)\n", key_size, key_size * 8); // Print size in bytes and bits
+            // Print decryption key size in bytes & bits
+            printf("Decryption Key Size: %zu bytes (%zu bits)\n", key_size, key_size * 8);
 
             // Inform that decryption is starting
-            printf("\n--- Decrypting Ciphertext... ---\n");
+            printf("\n--- Starting Decryption... ---\n");
 
             // Perform decryption
             entropic_decryption(in, out, plen, ctx->chacha.key.d, key_size * 8);
 
-            printf("\nDecryption finished....\n");
+            printf("\n--- Decryption Finished ---\n");
 
             // Print decrypted plaintext in HEX
             printf("\n--- Decrypted Plaintext ---\n");
@@ -515,42 +466,19 @@ if (in != NULL) { /* aad or text */
             // Print decrypted plaintext as a readable string
             printf("Decrypted Plaintext (string): ");
             for (size_t i = 0; i < plen; i++) {
-                if (isprint(out[i])) {
-                    printf("%c", out[i]);
-                } else {
-                    printf(".");
-                }
+                printf("%c", isprint(out[i]) ? out[i] : '.');
             }
             printf("\n");
 
             // Print decrypted plaintext size
             printf("Decrypted Plaintext Length: %zu bytes\n", plen);
 
-
-
-
-
-
-
-
-
-            // Print decrypted plaintext as a readable string
-            printf("Decrypted Plaintext (string): ");
-            for (size_t i = 0; i < plen; i++) {
-                if (isprint(out[i])) {
-                    printf("%c", out[i]);
-                } else {
-                    printf(".");
-                }
-            }
-            printf("\n");
-            //ctx->chacha.base.hw->cipher(&ctx->chacha.base, out, in, plen);// Will give error here.
-            printf("\nDecryption finished....\n");
-            printf("Plaintext: %.*s\n", plen, out);
+            // Update buffer pointers
             in += plen;
             out += plen;
             ctx->len.text += plen;
         }
+
     }
 }
 
