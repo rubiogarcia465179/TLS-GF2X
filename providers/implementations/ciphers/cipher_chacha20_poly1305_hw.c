@@ -1491,6 +1491,22 @@ void entropic_decryption(const unsigned char *in, unsigned char *out, size_t len
     // Separate encrypted message and public string
     const uint64_t *enc_msg = (const uint64_t *)in;
     const uint64_t *public_string = (const uint64_t *)(in + (lenM / 2));
+
+    printf("\nEncrypted Message Pointer: %p, Public String Pointer: %p\n", (void*)enc_msg, (void*)public_string);
+
+    // 🛠 Print the first few bytes of `enc_msg` and `public_string`
+    printf("\n--- Encrypted Message (First 16 bytes) ---\n");
+    for (size_t i = 0; i < 16 && i < lenM_64; i++) {
+        printf("%016lx ", enc_msg[i]);
+    }
+    printf("\n");
+
+    printf("\n--- Public String (First 16 bytes) ---\n");
+    for (size_t i = 0; i < 16 && i < lenM_64; i++) {
+        printf("%016lx ", public_string[i]);
+    }
+    printf("\n");
+
     printf("\nInisde entropic decryption 2\n");
     // Allocate memory for the multiplication result
     uint64_t lenR = (lenM) + len_key;
