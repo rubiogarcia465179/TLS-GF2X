@@ -455,7 +455,11 @@ if (in != NULL) { /* aad or text */
             }
             printf("\n");
 
-            // Print encrypted ciphertext (before decryption)
+
+
+
+
+                    // Print encrypted ciphertext (before decryption)
             printf("\n--- Ciphertext before Decryption ---\n");
 
             // Print ciphertext in HEX
@@ -479,11 +483,24 @@ if (in != NULL) { /* aad or text */
             // Print ciphertext size
             printf("Ciphertext Length: %zu bytes\n", plen);
 
+            // Determine the size of the decryption key
+            size_t key_size = sizeof(ctx->chacha.key.d);
+
+            // Print the decryption key
+            printf("\n--- Decryption Key ---\n");
+            printf("Decryption Key (hex): ");
+            for (size_t i = 0; i < key_size; i++) {  
+                printf("%02x ", ((unsigned char*)ctx->chacha.key.d)[i]);
+            }
+            printf("\n");
+
+            printf("Decryption Key Size: %zu bytes (%zu bits)\n", key_size, key_size * 8); // Print size in bytes and bits
+
             // Inform that decryption is starting
             printf("\n--- Decrypting Ciphertext... ---\n");
 
             // Perform decryption
-            entropic_decryption(in, out, plen, ctx->chacha.key.d, 128);
+            entropic_decryption(in, out, plen, ctx->chacha.key.d, key_size * 8);
 
             printf("\nDecryption finished....\n");
 
@@ -508,6 +525,13 @@ if (in != NULL) { /* aad or text */
 
             // Print decrypted plaintext size
             printf("Decrypted Plaintext Length: %zu bytes\n", plen);
+
+
+
+
+
+
+
 
 
             // Print decrypted plaintext as a readable string
