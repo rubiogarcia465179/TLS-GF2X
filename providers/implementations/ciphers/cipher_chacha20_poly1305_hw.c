@@ -1478,7 +1478,8 @@ void entropic_decryption(const unsigned char *in, unsigned char *out, size_t len
     }
     printf("\nInisde entropic decryption 7 - Before reduction\n");
     // Reduce the multiplication result
-    reduction(2, mult_result, final_key, lenR_64, lenR, lenM / 2, lenM_64);
+//    reduction(2, mult_result, final_key, lenR_64, lenR, lenM / 2, lenM_64);
+    reduction(2, mult_result, final_key, lenR_64, lenR, lenM, lenM_64);
     free(mult_result);
     mult_result = NULL;
 

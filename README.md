@@ -273,8 +273,6 @@ LD_LIBRARY_PATH=/home/TLS-GF2X /home/TLS-GF2X/apps/openssl s_client -connect 127
 
 ## To-Do List
 
-1. ~~**Figure out how to link the files having entropic encryption** -- `providers/implementations/ciphers/cipher_chacha20_poly1305_hw.c` -- To the openSSL build process. Not sure if this is to be done in a individual makefile that needs to be created, in ``providers\implementations\ciphers\build.info``, or `Makefile.in`. **We need to figure out this before continuing testing**
-2. ~~**Verify `gf2x` Installation**: Test the build in a Docker container (e.g., Mehmet’s setup) to confirm `gf2x` is correctly installed and linked. Verify that all the code integrated into `providers/implementations/ciphers/cipher_chacha20_poly1305_hw.c` is valid. That means, function declaration, headers, includes, etc. To make things easier, all function declarations can be added directly into `providers/implementations/ciphers/cipher_chacha20_poly1305_hw.c`. If I remember well, is not the most clean approach, but can be done!
 3. **Check behavior**: Test that encryption actually does something. So far, entropic_encryption function generates a segfault error.
 4. **Add decryption**: Add decryption function. Check that output is the same as input.
 5. **Hybrid symmetric encryption**: If desired, we can integrate first chachapoly encryption, then over the chachapoly encrypted test, perform entropic encryption. For decrypting, inverse process.
