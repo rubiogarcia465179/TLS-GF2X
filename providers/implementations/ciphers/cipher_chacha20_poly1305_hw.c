@@ -379,13 +379,55 @@ if (in != NULL) { /* aad or text */
             out += plen;
             ctx->len.text += plen;
         } else { /* ciphertext */
-            printf("\nHere, the input is the ciphertext, and we are going to decrypt.\n");
-            printf("Ciphertext: %.*s\n", plen, in);
+            // Print ciphertext in HEX
+            printf("Ciphertext (hex): ");
+            for (size_t i = 0; i < plen; i++) {
+                printf("%02x ", in[i]);  // Print each byte in hex format
+            }
+            printf("\n");
+
+            // Print ciphertext as a string (if printable)
+            printf("Ciphertext (string): ");
+            for (size_t i = 0; i < plen; i++) {
+                if (isprint(in[i])) {
+                    printf("%c", in[i]);  // Print character if printable
+                } else {
+                    printf(".");  // Replace non-printable characters with '.'
+                }
+            }
+            printf("\n");
+
+            // Print length of ciphertext
+            printf("Ciphertext length: %zu\n", plen);
+
+            // Print key in HEX
+            printf("Decryption Key (hex): ");
+            for (size_t i = 0; i < 16; i++) {  // Assuming 128-bit key
+                printf("%02x ", ((unsigned char*)ctx->chacha.key.d)[i]);
+            }
+            printf("\n");
+
+            // Print counter values
+
             printf("\nAbout to decrypt....\n");
+
+            // Debug Poly1305 Update
+            printf("Updating Poly1305 with ciphertext...\n");
             Poly1305_Update(poly, in, plen);
-            /*ChaCha20_ctr32(out, in, plen, ctx->chacha.key.d, ctx->chacha.counter); Take this function as example of how chachapoly does things....*/
-            //entropic_decryption(in, out, len, ctx->chacha.key.d, 128); // Will give error here.
-            ctx->chacha.base.hw->cipher(&ctx->chacha.base, out, in, plen);// Will give error here.
+
+            printf("Starting entropic decryption...\n");
+
+            // Print output buffer before decryption
+            printf("Output buffer before decryption (hex): ");
+            for (size_t i = 0; i < plen; i++) {
+                printf("%02x ", out[i]);
+            }
+            printf("\n");
+
+            // Call entropic decryption (may cause error)
+            entropic_decryption(in, out, plen, ctx->chacha.key.d, 128);
+
+            //ctx->chacha.base.hw->cipher(&ctx->chacha.base, out, in, plen);// Will give error here.
             printf("\nDecryption finished....\n");
             printf("Plaintext: %.*s\n", plen, out);
             in += plen;
@@ -1391,4 +1433,75 @@ void entropic_encryption(const unsigned char *in, unsigned char *out, size_t len
 
 
     
+}
+
+void entropic_decryption(const unsigned char *in, unsigned char *out, size_t lenM, const void *key, size_t len_key)
+{
+    unsigned int chunkSize = 0, chunkNum = 0;
+    printf("\nInisde entropic decryption 1\n");
+    // Lengths in 64-bit chunks
+    uint64_t lenM_64 = (lenM / 2 + 63) / 64; // lenM is now 2*original_length (enc_msg + public_string)
+    uint64_t lenk_64 = (len_key + 63) / 64;
+
+    // Separate encrypted message and public string
+    const uint64_t *enc_msg = (const uint64_t *)in;
+    const uint64_t *public_string = (const uint64_t *)(in + lenM / 2);
+    printf("\nInisde entropic decryption 2\n");
+    // Allocate memory for the multiplication result
+    uint64_t lenR = (lenM / 2) + len_key;
+    uint64_t lenR_64 = lenk_64 + lenM_64;
+    uint64_t *mult_result = (uint64_t *)aligned_alloc(32, sizeof(uint64_t) * lenR_64);
+    if (NULL == mult_result) {
+        fprintf(stderr, "entropic_decryption | alloc mult_result fail.\n");
+        exit(-1);
+    }
+    printf("\nInisde entropic decryption 3\n");
+    chunkSize = lenk_64;
+    chunkNum = lenM_64 / chunkSize;
+
+    uint64_t *chunks = (uint64_t *)aligned_alloc(32, sizeof(uint64_t) * (chunkSize * 2 * chunkNum));
+    if (NULL == chunks) {
+        fprintf(stderr, "entropic_decryption | alloc chunks fail.\n");
+        exit(-1);
+    }
+    printf("\nInisde entropic decryption 4\n");
+    // Perform binary polynomial multiplication of the key and public string
+    simplemult_gf2x(mult_result, public_string, lenM_64, (uint64_t *)key, lenk_64, chunks, chunkSize);
+    printf("\nInisde entropic decryption 5 - After simplemult\n");
+    free(chunks);
+    chunks = NULL;
+    printf("\nInisde entropic decryption 6 - After simplemult\n");
+    uint64_t *final_key = (uint64_t *)aligned_alloc(32, sizeof(uint64_t) * lenM_64);
+    if (NULL == final_key) {
+        fprintf(stderr, "entropic_decryption | alloc final_key fail.\n");
+        exit(-1);
+    }
+    printf("\nInisde entropic decryption 7 - Before reduction\n");
+    // Reduce the multiplication result
+    reduction(2, mult_result, final_key, lenR_64, lenR, lenM / 2, lenM_64);
+    free(mult_result);
+    mult_result = NULL;
+
+    // XOR encrypted message (`enc_msg`) and `final_key` and write to `out`
+    size_t remaining_bytes = (lenM / 2) % sizeof(uint64_t);
+    for (unsigned i = 0; i < lenM_64 - 1; ++i) {
+        ((uint64_t *)out)[i] = enc_msg[i] ^ final_key[i];
+    }
+
+    // Handle remaining bytes
+    if (remaining_bytes > 0) {
+        unsigned char *enc_msg_bytes = (unsigned char *)enc_msg;
+        unsigned char *out_bytes = (unsigned char *)out;
+        unsigned char *final_key_bytes = (unsigned char *)final_key;
+        for (size_t i = 0; i < remaining_bytes; ++i) {
+            out_bytes[lenM / 2 - remaining_bytes + i] = enc_msg_bytes[lenM / 2 - remaining_bytes + i] ^ final_key_bytes[lenM / 2 - remaining_bytes + i];
+        }
+    }
+
+    printf("\nFinal key is free\n");
+    free(final_key);
+    printf("\nFinal key is set to NULL now....\n");
+    final_key = NULL;
+    printf("\nFinal key just set to null is free\n");
+
 }
