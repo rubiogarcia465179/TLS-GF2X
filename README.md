@@ -148,11 +148,14 @@ RUN apt-get update && apt-get -y --no-install-recommends install \
     git
 
 WORKDIR /app
+
 RUN apt-get update
 RUN apt-get install -y unzip g++ make automake
 RUN wget https://gitlab.inria.fr/gf2x/gf2x/-/archive/master/gf2x-master.tar.gz
 RUN gunzip gf2x-master.tar.gz
 RUN mkdir gf2x  && tar xf gf2x-master.tar -C gf2x --strip-components 1
+
+
 WORKDIR /app/gf2x
 RUN libtoolize &&  aclocal && autoconf && autoheader &&  automake --add-missing
 RUN ./configure && make
@@ -166,12 +169,14 @@ RUN git clone -b master https://github.com/rubiogarcia465179/TLS-GF2X.git
 WORKDIR /home/TLS-GF2X
 RUN pwd
 RUN apt-get install -y autoconf
-RUN make clean
+# Set CFLAGS and LDFLAGS before configuration
+ENV CFLAGS="-fopenmp -I/usr/local/include"
+ENV LDFLAGS="-L/usr/local/lib"
+
 RUN ./Configure
-RUN ./Configure 
-#Install nano and add gf2x library as lib ext library in Makefile generated in TLS-GF2X after executing ./Configure
-RUN nano Makefile
-RUN make
+RUN make clean
+RUN make -j
+
 
 ```
 ---
