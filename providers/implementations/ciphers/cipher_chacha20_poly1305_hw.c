@@ -1490,7 +1490,7 @@ void entropic_decryption(const unsigned char *in, unsigned char *out, size_t len
 
     // Separate encrypted message and public string
     const uint64_t *enc_msg = (const uint64_t *)in;
-    const uint64_t *public_string = (const uint64_t *)(in + lenM);
+    const uint64_t *public_string = (const uint64_t *)(in + (lenM / 2));
     printf("\nInisde entropic decryption 2\n");
     // Allocate memory for the multiplication result
     uint64_t lenR = (lenM) + len_key;
@@ -1511,7 +1511,13 @@ void entropic_decryption(const unsigned char *in, unsigned char *out, size_t len
     }
     printf("\nInisde entropic decryption 4\n");
     // Perform binary polynomial multiplication of the key and public string
+    
     simplemult_gf2x(mult_result, public_string, lenM_64, (uint64_t *)key, lenk_64, chunks, chunkSize);
+    printf("\nMultiplication Result (Before Reduction):\n");
+    for (unsigned i = 0; i < lenM_64; ++i) {
+        printf("%016lx ", mult_result[i]);
+    }
+    printf("\n");
     printf("\nInisde entropic decryption 5 - After simplemult\n");
     free(chunks);
     chunks = NULL;
@@ -1528,7 +1534,14 @@ void entropic_decryption(const unsigned char *in, unsigned char *out, size_t len
         fprintf(stderr, "entropic_decryption | Memory corruption risk.\n");
         return;
     }
+    printf("\nSize Debugging:\nlenM_64: %lu, lenR_64: %lu, lenk_64: %lu\n", lenM_64, lenR_64, lenk_64);
+
     reduction(2, mult_result, final_key, lenR_64, lenR, lenM, lenM_64);
+    printf("\nFinal Key (After Reduction):\n");
+    for (unsigned i = 0; i < lenM_64; ++i) {
+        printf("%016lx ", final_key[i]);
+    }
+    printf("\n");
 
     free(mult_result);
     mult_result = NULL;
@@ -1536,10 +1549,12 @@ void entropic_decryption(const unsigned char *in, unsigned char *out, size_t len
     // XOR encrypted message (`enc_msg`) and `final_key` and write to `out`
     size_t remaining_bytes = lenM % sizeof(uint64_t);
 
+    printf("\nPerforming XOR Operation (Decryption)...\n");
     for (unsigned i = 0; i < lenM_64; ++i) {
-        ((uint64_t *)out)[i] = enc_msg[i] ^ final_key[i];
+        uint64_t decrypted_val = enc_msg[i] ^ final_key[i];
+        printf("%016lx XOR %016lx = %016lx\n", enc_msg[i], final_key[i], decrypted_val);
     }
-
+    printf("\n");
     // Handle remaining bytes
     if (remaining_bytes > 0) {
         unsigned char *enc_msg_bytes = (unsigned char *)enc_msg;
