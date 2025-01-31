@@ -379,7 +379,38 @@ if (in != NULL) { /* aad or text */
             out += plen;
             ctx->len.text += plen;
         } else { /* ciphertext */
+            // Print ciphertext in HE
+            printf("\n\n--- Decryption Process ---\n\n");
+
             // Print ciphertext in HEX
+            printf("Ciphertext (hex): ");
+            for (size_t i = 0; i < plen; i++) {
+                printf("%02x ", in[i]);
+            }
+            printf("\n");
+
+            // Print ciphertext as a string (if printable)
+            printf("Ciphertext (string): ");
+            for (size_t i = 0; i < plen; i++) {
+                if (isprint(in[i])) {
+                    printf("%c", in[i]);
+                } else {
+                    printf(".");
+                }
+            }
+            printf("\n");
+
+            printf("Ciphertext Length: %zu bytes\n", plen);
+
+            // Print decryption key
+            printf("Decryption Key (hex): ");
+            for (size_t i = 0; i < 32; i++) {  // Assuming 256-bit key
+                printf("%02x ", ((unsigned char*)ctx->chacha.key.d)[i]);
+            }
+            printf("\n");
+
+            printf("Decryption Key Length: 256 bits\n");
+            printf("About to decrypt...\n");
             printf("Ciphertext (hex): ");
             for (size_t i = 0; i < plen; i++) {
                 printf("%02x ", in[i]);  // Print each byte in hex format
@@ -426,7 +457,25 @@ if (in != NULL) { /* aad or text */
 
             // Call entropic decryption (may cause error)
             entropic_decryption(in, out, plen, ctx->chacha.key.d, 128);
+            printf("\nDecryption finished....\n");
 
+            // Print decrypted plaintext in HEX
+            printf("Decrypted Plaintext (hex): ");
+            for (size_t i = 0; i < plen; i++) {
+                printf("%02x ", out[i]);
+            }
+            printf("\n");
+
+            // Print decrypted plaintext as a readable string
+            printf("Decrypted Plaintext (string): ");
+            for (size_t i = 0; i < plen; i++) {
+                if (isprint(out[i])) {
+                    printf("%c", out[i]);
+                } else {
+                    printf(".");
+                }
+            }
+            printf("\n");
             //ctx->chacha.base.hw->cipher(&ctx->chacha.base, out, in, plen);// Will give error here.
             printf("\nDecryption finished....\n");
             printf("Plaintext: %.*s\n", plen, out);
