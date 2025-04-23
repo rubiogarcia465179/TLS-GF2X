@@ -1461,26 +1461,48 @@ void entropic_encryption(const unsigned char *in, unsigned char *out, size_t len
     mult_result = NULL;
     printf("\nFinal key generated succesfully\n");
 
-    // XOR input (`in`) and `final_key` and write to `out`
+    // Safe XOR input (`in`) and `final_key` into `out`, handles in-place too
     size_t remaining_bytes = lenM % sizeof(uint64_t);
-for (unsigned i = 0; i < lenM_64; ++i) {
-    uint64_t in_val = ((uint64_t *)in)[i];
-    uint64_t key_val = final_key[i];
-    uint64_t result = in_val ^ key_val;
 
-    ((uint64_t *)out)[i] = result;
+    if (in == out) {
+        // In-place XOR
+        for (unsigned i = 0; i < lenM_64; ++i) {
+            ((uint64_t *)out)[i] ^= final_key[i];
+            printf("XOR[%u]: 0x%016lx ^ 0x%016lx = 0x%016lx\n",
+                i,
+                ((uint64_t *)out)[i] ^ final_key[i],  // original input value reconstructed
+                final_key[i],
+                ((uint64_t *)out)[i]);
+        }
+    } else {
+        // Standard XOR
+        for (unsigned i = 0; i < lenM_64; ++i) {
+            uint64_t in_val = ((const uint64_t *)in)[i];
+            uint64_t key_val = final_key[i];
+            uint64_t result = in_val ^ key_val;
+            ((uint64_t *)out)[i] = result;
 
-    printf("XOR[%u]: 0x%016lx ^ 0x%016lx = 0x%016lx\n",
-           i, in_val, key_val, result);
-}
+            printf("XOR[%u]: 0x%016lx ^ 0x%016lx = 0x%016lx\n",
+                i, in_val, key_val, result);
+        }
+    }
 
     // Handle remaining bytes
     if (remaining_bytes > 0) {
-        unsigned char *in_bytes = (unsigned char *)in;
-        unsigned char *out_bytes = (unsigned char *)out; // add public string
-        unsigned char *final_key_bytes = (unsigned char *)final_key;
+        const unsigned char *in_bytes = (const unsigned char *)in;
+        unsigned char *out_bytes = (unsigned char *)out;
+        const unsigned char *final_key_bytes = (const unsigned char *)final_key;
+        size_t start = lenM - remaining_bytes;
+
         for (size_t i = 0; i < remaining_bytes; ++i) {
-            out_bytes[lenM - remaining_bytes + i] = in_bytes[lenM - remaining_bytes + i] ^ final_key_bytes[lenM - remaining_bytes + i];
+            unsigned char result = in_bytes[start + i] ^ final_key_bytes[start + i];
+            out_bytes[start + i] = result;
+
+            printf("XOR[%zu]: 0x%02x ^ 0x%02x = 0x%02x\n",
+                start + i,
+                in_bytes[start + i],
+                final_key_bytes[start + i],
+                result);
         }
     }
     
