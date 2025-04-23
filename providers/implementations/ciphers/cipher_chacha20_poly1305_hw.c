@@ -1414,7 +1414,6 @@ void entropic_encryption(const unsigned char *in, unsigned char *out, size_t len
     // Print length information
     printf("\n[Info] Plaintext length (bytes): %zu\n", lenM);
     printf("[Info] Plaintext length (64-bit chunks): %lu\n", lenM_64);
-    printf("[Info] Total output length (ciphertext + public_string): %zu\n",lenM + lenM_64 * sizeof(uint64_t));
 
     // Allocate memory with error handling and proper cleanup using goto
     uint64_t *public_string = NULL;
@@ -1429,7 +1428,7 @@ void entropic_encryption(const unsigned char *in, unsigned char *out, size_t len
         exit(-1);
     }
     random_bytes_(public_string, lenM_64);
-    printf("\nInisde entropic encryption 2\n");
+    printf("\nRandom bytes for public_string just allocated...\n");
     // Memory allocation for the multiplication result
     uint64_t lenR = lenM + len_key;
     uint64_t lenR_64 = lenk_64 + lenM_64;
@@ -1441,7 +1440,6 @@ void entropic_encryption(const unsigned char *in, unsigned char *out, size_t len
 
     chunkSize = lenk_64;
     chunkNum = lenM_64 / chunkSize;
-
     chunks = (uint64_t *)aligned_alloc(32, sizeof(uint64_t) * (chunkSize * 2 * chunkNum));
     if (NULL == chunks) {
         fprintf(stderr, "entropic_encryption | alloc chunks fail.\n");
@@ -1451,13 +1449,10 @@ void entropic_encryption(const unsigned char *in, unsigned char *out, size_t len
 
     // Perform binary polynomial multiplication of the key and public string
     simplemult_gf2x(mult_result, public_string, lenM_64, (uint64_t *)key, lenk_64, chunks, chunkSize);
-    //free(public_string);
-    //printf("\nFree public _ stirng\n");
-    //public_string = NULL;
-
     free(chunks);
     chunks = NULL;
-    printf("\nGen final key\n");
+    //printf("\nGen final key\n");
+    printf("\nWhere is the final_key generated? I see that here, we go from key to final_key with no assignation...\n");
     final_key = (uint64_t *)aligned_alloc(32, sizeof(uint64_t) * lenM_64);
     if (NULL == final_key) {
         fprintf(stderr, "entropic_encryption | alloc final_key fail.\n");
@@ -1465,42 +1460,29 @@ void entropic_encryption(const unsigned char *in, unsigned char *out, size_t len
     }
 
     // Reduce the multiplication result
-    printf("\nReduction\n");
+    //printf("\nReduction\n");
     reduction(2, mult_result, final_key, lenR_64, lenR, lenM, lenM_64);
-    printf("\nReduction finished\n");
-
+    printf("\nReduction finished and final key created\n");
     free(mult_result);
-    mult_result = NULL;
-    printf("\nFinal key generated succesfully\n");
+    //printf("\nFinal key generated succesfully\n");
 
     // Safe XOR input (`in`) and `final_key` into `out`, handles in-place too
     size_t remaining_bytes = lenM % sizeof(uint64_t);
+    printf("\nPerforming XOR\n");
+    print_hex("Final Key", final_key, len_key);
+    print_hex("Public string", public_string, lenM_64 * sizeof(uint64_t));
+    print_hex("Original (plaintext)", in_val, lenM);
+    printf("\n===== [ Encryption XOR Started] =====\n");
 
-    if (in == out) {
-        // In-place XOR
-        printf("\nIn-place XOR\n");
-        for (unsigned i = 0; i < lenM_64; ++i) {
-            ((uint64_t *)out)[i] ^= final_key[i];
-            printf("XOR[%u]: 0x%016lx ^ 0x%016lx = 0x%016lx\n",
-                i,
-                ((uint64_t *)out)[i] ^ final_key[i],  // original input value reconstructed
-                final_key[i],
-                ((uint64_t *)out)[i]);
-        }
-    } else {
-        // Standard XOR
-        printf("\nStandard-place XOR\n");
-        for (unsigned i = 0; i < lenM_64; ++i) {
-            uint64_t in_val = ((const uint64_t *)in)[i];
-            uint64_t key_val = final_key[i];
-            uint64_t result = in_val ^ key_val;
-            ((uint64_t *)out)[i] = result;
-
-            printf("XOR[%u]: 0x%016lx ^ 0x%016lx = 0x%016lx\n",
-                i, in_val, key_val, result);
-        }
+    for (unsigned i = 0; i < lenM_64; ++i) 
+    {
+        ((uint64_t *)out)[i] ^= final_key[i];
+        printf("XOR[%u]: 0x%016lx ^ 0x%016lx = 0x%016lx\n",
+            i,
+            ((uint64_t *)out)[i] ^ final_key[i],  // original input value reconstructed
+            final_key[i],
+            ((uint64_t *)out)[i]);
     }
-
     // Handle remaining bytes
     if (remaining_bytes > 0) {
         const unsigned char *in_bytes = (const unsigned char *)in;
@@ -1519,35 +1501,16 @@ void entropic_encryption(const unsigned char *in, unsigned char *out, size_t len
                 result);
         }
     }
-    
-    free(final_key);
-    final_key = NULL;
-
-    // Append public string after ciphertext
-    // memcpy(out + lenM, public_string, lenM_64 * sizeof(uint64_t));
-
+    printf("\n===== [ Encryption XOR Finished] =====\n");
     // === Print Summary ===
     printf("\n===== [ Encryption Summary ] =====\n");
-    print_hex("Key used", key, len_key);
-    print_hex("Public string", public_string, lenM_64 * sizeof(uint64_t));
-    print_hex("Original (plaintext)", in_val, lenM);
-    print_hex("Ciphertext encrypted", out, lenM);
-    print_hex("Final encrypted message (sent)", out, lenM + lenM_64 * sizeof(uint64_t));
+    print_hex("Encrypted", out, lenM);
     printf("==================================\n\n");
 
     free(public_string);
+    free(final_key);
+    final_key = NULL;
 
-}
-
-void print_hex(const char *label, const void *data, size_t len) {
-    const unsigned char *bytes = (const unsigned char *)data;
-    printf("%s [%zu bytes]: ", label, len);
-    for (size_t i = 0; i < len; ++i) {
-        printf("%02X", bytes[i]);
-        if ((i + 1) % 16 == 0 && i + 1 != len) printf("\n                         ");
-        else printf(" ");
-    }
-    printf("\n");
 }
 
 void entropic_decryption(const unsigned char *in, unsigned char *out, size_t lenM, const void *key, size_t len_key)
@@ -1562,41 +1525,20 @@ void entropic_decryption(const unsigned char *in, unsigned char *out, size_t len
     const uint64_t *enc_msg = (const uint64_t *)in;
     // Allocate memory with error handling and proper cleanup using goto
     uint64_t *public_string = NULL;
-    
+
     public_string = (uint64_t *)aligned_alloc(32, sizeof(uint64_t) * lenM_64);
     if (NULL == public_string) {
         fprintf(stderr, "entropic_encryption | alloc public_string fail.\n");
         exit(-1);
     }
     random_bytes_(public_string, lenM_64);
-
-    printf("\nEncrypted Message Pointer: %p, Public String Pointer: %p\n", (void*)enc_msg, (void*)public_string);
-
     // === 🔍 Decryption Summary (Start) ===
-    printf("\n===== [ Decryption Input Summary ] =====\n");
-    print_hex("Key received", key, len_key);
-    print_hex("Encrypted message", enc_msg, lenM / 2);
-    print_hex("Public string", public_string, lenM / 2);
-    printf("========================================\n");
-
-    // 🛠 Print the first few bytes of `enc_msg` and `public_string`
-    printf("\n--- Encrypted Message (First 16 bytes) ---\n");
-    for (size_t i = 0; i < 16 && i < lenM_64; i++) {
-        printf("%016lx ", enc_msg[i]);
-    }
-    printf("\n");
-
-    printf("\n--- Public String (First 16 bytes) ---\n");
-    for (size_t i = 0; i < 16 && i < lenM_64; i++) {
-        printf("%016lx ", public_string[i]);
-    }
-    printf("\n");
-
     printf("\nInisde entropic decryption 2\n");
     // Allocate memory for the multiplication result
     uint64_t lenR = (lenM) + len_key;
     uint64_t lenR_64 = lenk_64 + lenM_64;
     uint64_t *mult_result = (uint64_t *)aligned_alloc(32, sizeof(uint64_t) * lenR_64);
+
     if (NULL == mult_result) {
         fprintf(stderr, "entropic_decryption | alloc mult_result fail.\n");
         return;  // Or handle error properly
@@ -1609,51 +1551,37 @@ void entropic_decryption(const unsigned char *in, unsigned char *out, size_t len
     if (NULL == chunks) {
         fprintf(stderr, "entropic_decryption | alloc chunks fail.\n");
         exit(-1);
-    }
-    printf("\nInisde entropic decryption 4\n");
-    // Perform binary polynomial multiplication of the key and public string
-    
+    }    
     simplemult_gf2x(mult_result, public_string, lenM_64, (uint64_t *)key, lenk_64, chunks, chunkSize);
-    printf("\nMultiplication Result (Before Reduction):\n");
-    for (unsigned i = 0; i < lenM_64; ++i) {
-        printf("%016lx ", mult_result[i]);
-    }
-    printf("\n");
-    printf("\nInisde entropic decryption 5 - After simplemult\n");
     free(chunks);
     chunks = NULL;
-    printf("\nInisde entropic decryption 6 - After simplemult\n");
     uint64_t *final_key = (uint64_t *)aligned_alloc(32, sizeof(uint64_t) * lenM_64);
     if (NULL == final_key) {
         fprintf(stderr, "entropic_decryption | alloc final_key fail.\n");
         exit(-1);
     }
-    printf("\nInisde entropic decryption 7 - Before reduction\n");
-    // Reduce the multiplication result
-//    reduction(2, mult_result, final_key, lenR_64, lenR, lenM / 2, lenM_64);
     if (lenM_64 > lenR_64) {
         fprintf(stderr, "entropic_decryption | Memory corruption risk.\n");
         return;
     }
-    printf("\nSize Debugging:\nlenM_64: %lu, lenR_64: %lu, lenk_64: %lu\n", lenM_64, lenR_64, lenk_64);
-
     reduction(2, mult_result, final_key, lenR_64, lenR, lenM, lenM_64);
-    printf("\nFinal Key (After Reduction):\n");
-    for (unsigned i = 0; i < lenM_64; ++i) {
-        printf("%016lx ", final_key[i]);
-    }
-    printf("\n");
-
     free(mult_result);
     mult_result = NULL;
+
+    printf("\n===== [ Decryption Input Summary ] =====\n");
+    print_hex("Final Key", final_key, len_key);
+    print_hex("Encrypted message", enc_msg, lenM / 2);
+    print_hex("Public string received by other party (simulated)", public_string, lenM_64 * sizeof(uint64_t));
+    printf("========================================\n");
 
     // XOR encrypted message (`enc_msg`) and `final_key` and write to `out`
     size_t remaining_bytes = lenM % sizeof(uint64_t);
 
-    printf("\nPerforming XOR Operation (Decryption)...\n");
-    for (unsigned i = 0; i < lenM_64; ++i) {
-        uint64_t decrypted_val = enc_msg[i] ^ final_key[i];
-        printf("%016lx XOR %016lx = %016lx\n", enc_msg[i], final_key[i], decrypted_val);
+    printf("\n===== [ Decryption XOR Started ] =====\n");
+    for (unsigned i = 0; i < lenM_64; ++i) 
+    {
+        ((uint64_t *)out)[i] = enc_msg[i] ^ final_key[i];
+        printf("%016lx XOR %016lx = %016lx\n", enc_msg[i], final_key[i], ((uint64_t *)out)[i]);
     }
     printf("\n");
     // Handle remaining bytes
@@ -1665,11 +1593,19 @@ void entropic_decryption(const unsigned char *in, unsigned char *out, size_t len
             out_bytes[lenM - remaining_bytes + i] = enc_msg_bytes[lenM - remaining_bytes + i] ^ final_key_bytes[lenM - remaining_bytes + i];
         }
     }
-
-    printf("\nFinal key is free\n");
+    printf("\n===== [ Decryption XOR Started ] =====\n");
+    print_hex("Original (plaintext)", out, lenM);
     free(final_key);
-    printf("\nFinal key is set to NULL now....\n");
     final_key = NULL;
-    printf("\nFinal key just set to null is free\n");
+}
 
+void print_hex(const char *label, const void *data, size_t len) {
+    const unsigned char *bytes = (const unsigned char *)data;
+    printf("%s [%zu bytes]: ", label, len);
+    for (size_t i = 0; i < len; ++i) {
+        printf("%02X", bytes[i]);
+        if ((i + 1) % 16 == 0 && i + 1 != len) printf("\n                         ");
+        else printf(" ");
+    }
+    printf("\n");
 }
