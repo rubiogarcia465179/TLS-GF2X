@@ -312,4 +312,13 @@ bool get_bit_scalar(uint64_t bits, int i);
 uint64_t extract_bits_scalars(int off, uint64_t a0, uint64_t a1);
 uint64_t set_bit_scalar(uint64_t bits, int i, bool flag);
 
+/**
+ * @brief Prints a buffer in hexadecimal format with a label.
+ *
+ * @param label A string to print before the hex output.
+ * @param data A pointer to the data buffer.
+ * @param len The number of bytes to print.
+ */
+void print_hex(const char *label, const void *data, size_t len);
+
 

@@ -1397,6 +1397,11 @@ void entropic_encryption(const unsigned char *in, unsigned char *out, size_t len
     uint64_t lenM_64 = (lenM + 63) / 64; // Ensure lenM_64 accounts for alignment (round up to the next multiple of 64 bits)
     uint64_t lenk_64 = (len_key + 63) / 64;
 
+    // Print length information
+    printf("\n[Info] Plaintext length (bytes): %zu\n", lenM);
+    printf("[Info] Plaintext length (64-bit chunks): %lu\n", lenM_64);
+    printf("[Info] Total output length (ciphertext + public_string): %zu\n",lenM + lenM_64 * sizeof(uint64_t));
+
     // Allocate memory with error handling and proper cleanup using goto
     uint64_t *public_string = NULL;
     uint64_t *mult_result = NULL;
@@ -1432,9 +1437,9 @@ void entropic_encryption(const unsigned char *in, unsigned char *out, size_t len
 
     // Perform binary polynomial multiplication of the key and public string
     simplemult_gf2x(mult_result, public_string, lenM_64, (uint64_t *)key, lenk_64, chunks, chunkSize);
-    free(public_string);
-    printf("\nFree public _ stirng\n");
-    public_string = NULL;
+    //free(public_string);
+    //printf("\nFree public _ stirng\n");
+    //public_string = NULL;
 
     free(chunks);
     chunks = NULL;
@@ -1463,21 +1468,41 @@ void entropic_encryption(const unsigned char *in, unsigned char *out, size_t len
     // Handle remaining bytes
     if (remaining_bytes > 0) {
         unsigned char *in_bytes = (unsigned char *)in;
-        unsigned char *out_bytes = (unsigned char *)out;
+        unsigned char *out_bytes = (unsigned char *)out; // add public string
         unsigned char *final_key_bytes = (unsigned char *)final_key;
         for (size_t i = 0; i < remaining_bytes; ++i) {
             out_bytes[lenM - remaining_bytes + i] = in_bytes[lenM - remaining_bytes + i] ^ final_key_bytes[lenM - remaining_bytes + i];
         }
     }
-
-    printf("\nFinal key is free\n");
-    free(final_key);
-    printf("\nFinal key is set to NULL now....\n");
-    final_key = NULL;
-    printf("\nFinal key just set to null is free\n");
-
-
     
+    free(final_key);
+    final_key = NULL;
+
+    // Append public string after ciphertext
+    memcpy(out + lenM, public_string, lenM_64 * sizeof(uint64_t));
+
+    // === Print Summary ===
+    printf("\n===== [ Encryption Summary ] =====\n");
+    print_hex("Key used", key, len_key);
+    print_hex("Public string", public_string, lenM_64 * sizeof(uint64_t));
+    print_hex("Original (plaintext)", in, lenM);
+    print_hex("Ciphertext (only)", out, lenM);
+    print_hex("Final encrypted message (sent)", out, lenM + lenM_64 * sizeof(uint64_t));
+    printf("==================================\n\n");
+
+    free(public_string);
+
+}
+
+void print_hex(const char *label, const void *data, size_t len) {
+    const unsigned char *bytes = (const unsigned char *)data;
+    printf("%s [%zu bytes]: ", label, len);
+    for (size_t i = 0; i < len; ++i) {
+        printf("%02X", bytes[i]);
+        if ((i + 1) % 16 == 0 && i + 1 != len) printf("\n                         ");
+        else printf(" ");
+    }
+    printf("\n");
 }
 
 void entropic_decryption(const unsigned char *in, unsigned char *out, size_t lenM, const void *key, size_t len_key)
@@ -1493,6 +1518,13 @@ void entropic_decryption(const unsigned char *in, unsigned char *out, size_t len
     const uint64_t *public_string = (const uint64_t *)(in + (lenM / 2));
 
     printf("\nEncrypted Message Pointer: %p, Public String Pointer: %p\n", (void*)enc_msg, (void*)public_string);
+
+    // === 🔍 Decryption Summary (Start) ===
+    printf("\n===== [ Decryption Input Summary ] =====\n");
+    print_hex("Key received", key, len_key);
+    print_hex("Encrypted message", enc_msg, lenM / 2);
+    print_hex("Public string", public_string, lenM / 2);
+    printf("========================================\n");
 
     // 🛠 Print the first few bytes of `enc_msg` and `public_string`
     printf("\n--- Encrypted Message (First 16 bytes) ---\n");
