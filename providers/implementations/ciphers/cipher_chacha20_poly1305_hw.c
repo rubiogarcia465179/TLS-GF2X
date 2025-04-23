@@ -380,6 +380,8 @@ if (bctx->enc) { /* plaintext */
 
     // Inform that encryption is starting
     printf("\n--- Starting Encryption... ---\n");
+    printf("\n--- Printing memory address location of eacg variable ---\n");
+    printf("in: %p, out: %p, final_key: %p\n", (void *)in, (void *)out, (void *)final_key);
 
     // Perform encryption
     entropic_encryption(in, out, plen, ctx->chacha.key.d, key_size * 8);
@@ -1461,15 +1463,16 @@ void entropic_encryption(const unsigned char *in, unsigned char *out, size_t len
 
     // XOR input (`in`) and `final_key` and write to `out`
     size_t remaining_bytes = lenM % sizeof(uint64_t);
-    for (unsigned i = 0; i < lenM_64; ++i) {
-        ((uint64_t *)out)[i] = ((uint64_t *)in)[i] ^ final_key[i];
-    
-     printf("XOR[%u]: 0x%016lx ^ 0x%016lx = 0x%016lx\n",
-           i,
-           ((uint64_t *)in)[i],
-           final_key[i],
-           ((uint64_t *)out)[i]);
-    }
+for (unsigned i = 0; i < lenM_64; ++i) {
+    uint64_t in_val = ((uint64_t *)in)[i];
+    uint64_t key_val = final_key[i];
+    uint64_t result = in_val ^ key_val;
+
+    ((uint64_t *)out)[i] = result;
+
+    printf("XOR[%u]: 0x%016lx ^ 0x%016lx = 0x%016lx\n",
+           i, in_val, key_val, result);
+}
 
     // Handle remaining bytes
     if (remaining_bytes > 0) {
