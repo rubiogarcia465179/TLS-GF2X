@@ -380,8 +380,8 @@ if (bctx->enc) { /* plaintext */
 
     // Inform that encryption is starting
     printf("\n--- Starting Encryption... ---\n");
-    printf("\n--- Printing memory address location of eacg variable ---\n");
-    printf("in: %p, out: %p, final_key: %p\n", (void *)in, (void *)out, (void *)final_key);
+    printf("\n--- Printing memory address location of each variable ---\n");
+    printf("in: %p, out: %p, final_key: %p\n", (void *)in, (void *)out, (void *)ctx->chacha.key.d);
 
     // Perform encryption
     entropic_encryption(in, out, plen, ctx->chacha.key.d, key_size * 8);
