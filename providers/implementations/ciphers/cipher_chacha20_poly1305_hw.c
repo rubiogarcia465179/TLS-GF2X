@@ -1461,8 +1461,14 @@ void entropic_encryption(const unsigned char *in, unsigned char *out, size_t len
 
     // XOR input (`in`) and `final_key` and write to `out`
     size_t remaining_bytes = lenM % sizeof(uint64_t);
-    for (unsigned i = 0; i < lenM_64 - 1; ++i) {
+    for (unsigned i = 0; i < lenM_64; ++i) {
         ((uint64_t *)out)[i] = ((uint64_t *)in)[i] ^ final_key[i];
+    
+     printf("XOR[%u]: 0x%016lx ^ 0x%016lx = 0x%016lx\n",
+           i,
+           ((uint64_t *)in)[i],
+           final_key[i],
+           ((uint64_t *)out)[i]);
     }
 
     // Handle remaining bytes
@@ -1486,7 +1492,7 @@ void entropic_encryption(const unsigned char *in, unsigned char *out, size_t len
     print_hex("Key used", key, len_key);
     print_hex("Public string", public_string, lenM_64 * sizeof(uint64_t));
     print_hex("Original (plaintext)", in, lenM);
-    print_hex("Ciphertext (only)", out, lenM);
+    print_hex("Ciphertext encrypted", out, lenM);
     print_hex("Final encrypted message (sent)", out, lenM + lenM_64 * sizeof(uint64_t));
     printf("==================================\n\n");
 
