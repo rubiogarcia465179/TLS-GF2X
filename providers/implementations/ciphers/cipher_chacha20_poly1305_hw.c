@@ -562,7 +562,7 @@ const PROV_CIPHER_HW *ossl_prov_cipher_hw_chacha20_poly1305(size_t keybits)
     return (PROV_CIPHER_HW *)&chacha20poly1305_hw;
 }
 
-/*EVERYTHING NEEDED FOR ENTROPIC ENCRYPTION*/
+/*EVERYTHING NEEDED FOR ENTROPIC ENCRYPTION
 
 void random_bytes_(uint64_t * p, uint64_t n){
     srand(time(NULL));
@@ -575,6 +575,18 @@ void random_bytes_(uint64_t * p, uint64_t n){
         //printf("in Helper|random_bytes()| After the last step: p[%d]:%0lx\n",i, p[i]);
 
         
+    }
+}
+*/
+
+void random_bytes_(uint64_t *p, uint64_t n) {
+    // Fixed seed to ensure deterministic output (no time-based randomness)
+    srand(12345);  // You can pick any constant here
+
+    for (unsigned i = 0; i < n; i++) {
+        p[i] = rand();
+        p[i] <<= 32;
+        p[i] |= rand();
     }
 }
 
@@ -1466,6 +1478,7 @@ void entropic_encryption(const unsigned char *in, unsigned char *out, size_t len
 
     if (in == out) {
         // In-place XOR
+        printf("\nIn-place XOR\n");
         for (unsigned i = 0; i < lenM_64; ++i) {
             ((uint64_t *)out)[i] ^= final_key[i];
             printf("XOR[%u]: 0x%016lx ^ 0x%016lx = 0x%016lx\n",
@@ -1476,6 +1489,7 @@ void entropic_encryption(const unsigned char *in, unsigned char *out, size_t len
         }
     } else {
         // Standard XOR
+        printf("\nStandard-place XOR\n");
         for (unsigned i = 0; i < lenM_64; ++i) {
             uint64_t in_val = ((const uint64_t *)in)[i];
             uint64_t key_val = final_key[i];
@@ -1510,13 +1524,13 @@ void entropic_encryption(const unsigned char *in, unsigned char *out, size_t len
     final_key = NULL;
 
     // Append public string after ciphertext
-    memcpy(out + lenM, public_string, lenM_64 * sizeof(uint64_t));
+    // memcpy(out + lenM, public_string, lenM_64 * sizeof(uint64_t));
 
     // === Print Summary ===
     printf("\n===== [ Encryption Summary ] =====\n");
     print_hex("Key used", key, len_key);
     print_hex("Public string", public_string, lenM_64 * sizeof(uint64_t));
-    print_hex("Original (plaintext)", in, lenM);
+    print_hex("Original (plaintext)", in_val, lenM);
     print_hex("Ciphertext encrypted", out, lenM);
     print_hex("Final encrypted message (sent)", out, lenM + lenM_64 * sizeof(uint64_t));
     printf("==================================\n\n");
@@ -1546,7 +1560,15 @@ void entropic_decryption(const unsigned char *in, unsigned char *out, size_t len
 
     // Separate encrypted message and public string
     const uint64_t *enc_msg = (const uint64_t *)in;
-    const uint64_t *public_string = (const uint64_t *)(in + (lenM / 2));
+    // Allocate memory with error handling and proper cleanup using goto
+    uint64_t *public_string = NULL;
+    
+    public_string = (uint64_t *)aligned_alloc(32, sizeof(uint64_t) * lenM_64);
+    if (NULL == public_string) {
+        fprintf(stderr, "entropic_encryption | alloc public_string fail.\n");
+        exit(-1);
+    }
+    random_bytes_(public_string, lenM_64);
 
     printf("\nEncrypted Message Pointer: %p, Public String Pointer: %p\n", (void*)enc_msg, (void*)public_string);
 
