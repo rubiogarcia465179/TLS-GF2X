@@ -1422,7 +1422,7 @@ void entropic_decryption(const unsigned char *in, unsigned char *out, size_t len
 
     printf("\n===== [ Decryption Input Summary ] =====\n");
     print_hex("Final Key", final_key, len_key);
-    print_hex("Encrypted message", enc_msg, lenM / 2);
+    print_hex("Encrypted message", enc_msg, lenM);
     print_hex("Public string received by other party (simulated)", public_string, lenM_64 * sizeof(uint64_t));
     printf("========================================\n");
     printf("\n===== [ Decryption XOR Started ] =====\n");
