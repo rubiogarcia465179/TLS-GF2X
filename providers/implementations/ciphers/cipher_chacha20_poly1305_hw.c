@@ -1425,30 +1425,24 @@ void entropic_decryption(const unsigned char *in, unsigned char *out, size_t len
     print_hex("Encrypted message", enc_msg, lenM / 2);
     print_hex("Public string received by other party (simulated)", public_string, lenM_64 * sizeof(uint64_t));
     printf("========================================\n");
-
-    // XOR encrypted message (`enc_msg`) and `final_key` and write to `out`
-    size_t remaining_bytes = lenM % sizeof(uint64_t);
-
     printf("\n===== [ Decryption XOR Started ] =====\n");
-    for (unsigned i = 0; i < lenM_64; ++i) 
-    {
-        ((uint64_t *)out)[i] = enc_msg[i] ^ final_key[i];
-        printf("XOR[%u]: 0x%016lx ^ 0x%016lx = 0x%016lx\n", 
-            i, 
-            enc_msg[i],
-            final_key[i], 
-            ((uint64_t *)out)[i]);
-    }
-    printf("\n");
-    // Handle remaining bytes
-    if (remaining_bytes > 0) {
-        printf("Now going to remaining bytes - Maybe this runs again and reencryopt back to original value?");
-        unsigned char *enc_msg_bytes = (unsigned char *)enc_msg;
-        unsigned char *out_bytes = (unsigned char *)out;
-        unsigned char *final_key_bytes = (unsigned char *)final_key;
-        for (size_t i = 0; i < remaining_bytes; ++i) {
-            out_bytes[lenM - remaining_bytes + i] = enc_msg_bytes[lenM - remaining_bytes + i] ^ final_key_bytes[lenM - remaining_bytes + i];
-        }
+
+    // Byte-by-byte XOR decryption
+    const unsigned char *enc_msg_bytes = (const unsigned char *)enc_msg;
+    unsigned char *out_bytes = (unsigned char *)out;
+    const unsigned char *key_bytes = (const unsigned char *)final_key;
+
+    for (size_t i = 0; i < lenM; ++i) {
+        out_bytes[i] = enc_msg_bytes[i] ^ key_bytes[i];
+        
+        // Print in different formats based on position to aid debugging
+        if (i % 8 == 0) printf("\n"); // Line break every 8 bytes for readability
+        
+        printf("XOR[%zu]: 0x%02x ^ 0x%02x = 0x%02x\n",
+            i,
+            enc_msg_bytes[i],
+            key_bytes[i],
+            out_bytes[i]);
     }
     printf("\n===== [ Decryption XOR Finished ] =====\n");
     print_hex("Unencrypted message", out, lenM);
