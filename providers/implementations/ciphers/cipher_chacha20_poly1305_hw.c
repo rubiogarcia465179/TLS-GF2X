@@ -1361,6 +1361,7 @@ void entropic_encryption(const unsigned char *in, unsigned char *out, size_t len
 
     // Handle remaining bytes - this part looks good already
     if (remaining_bytes > 0) {
+        printf("Now going to remaining bytes - Maybe this runs again and reencryopt back to original value?");
         const unsigned char *in_bytes = (const unsigned char *)in;
         unsigned char *out_bytes = (unsigned char *)out;
         const unsigned char *final_key_bytes = (const unsigned char *)final_key;
@@ -1457,6 +1458,7 @@ void entropic_decryption(const unsigned char *in, unsigned char *out, size_t len
     printf("\n");
     // Handle remaining bytes
     if (remaining_bytes > 0) {
+        printf("Now going to remaining bytes - Maybe this runs again and reencryopt back to original value?");
         unsigned char *enc_msg_bytes = (unsigned char *)enc_msg;
         unsigned char *out_bytes = (unsigned char *)out;
         unsigned char *final_key_bytes = (unsigned char *)final_key;
