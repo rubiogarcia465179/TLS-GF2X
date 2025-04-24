@@ -343,42 +343,8 @@ if (in != NULL) { /* aad or text */
 
 if (bctx->enc) { /* plaintext */
     printf("\n\n========== Encryption Process ==========\n\n");
-
-    // Print input plaintext before encryption
-    printf("--- Input Plaintext ---\n");
-
-    // Print plaintext in HEX
-    printf("Plaintext (hex): ");
-    for (size_t i = 0; i < plen; i++) {
-        printf("%02x ", in[i]);
-    }
-    printf("\n");
-
-    // Print plaintext as a readable string
-    printf("Plaintext (string): ");
-    for (size_t i = 0; i < plen; i++) {
-        printf("%c", isprint(in[i]) ? in[i] : '.');
-    }
-    printf("\n");
-
-    // Print plaintext size
-    printf("Plaintext Length: %zu bytes\n", plen);
-
     // Determine the size of the encryption key
     size_t key_size = sizeof(ctx->chacha.key.d);
-
-    // Print the encryption key
-    printf("\n--- Encryption Key ---\n");
-    printf("Encryption Key (hex): ");
-    for (size_t i = 0; i < key_size; i++) {
-        printf("%02x ", ((unsigned char*)ctx->chacha.key.d)[i]);
-    }
-    printf("\n");
-
-    // Print encryption key size in bytes & bits
-    printf("Encryption Key Size: %zu bytes (%zu bits)\n", key_size, key_size * 8);
-
-    // Inform that encryption is starting
     printf("\n--- Starting Encryption... ---\n");
     printf("\n--- Printing memory address location of each variable ---\n");
     printf("in: %p, out: %p, final_key: %p\n", (void *)in, (void *)out, (void *)ctx->chacha.key.d);
@@ -388,24 +354,6 @@ if (bctx->enc) { /* plaintext */
 
     printf("\n--- Encryption Finished ---\n");
 
-    // Print encrypted ciphertext in HEX
-    printf("\n--- Encrypted Ciphertext ---\n");
-    printf("Ciphertext (hex): ");
-    for (size_t i = 0; i < plen; i++) {
-        printf("%02x ", out[i]);
-    }
-    printf("\n");
-
-    // Print encrypted ciphertext as a readable string
-    printf("Ciphertext (string): ");
-    for (size_t i = 0; i < plen; i++) {
-        printf("%c", isprint(out[i]) ? out[i] : '.');
-    }
-    printf("\n");
-
-    // Print encrypted ciphertext size
-    printf("Ciphertext Length: %zu bytes\n", plen);
-
     // Update buffer pointers
     in += plen;
     out += plen;
@@ -414,68 +362,12 @@ if (bctx->enc) { /* plaintext */
 
         else { /* ciphertext */
             printf("\n\n========== Decryption Process ==========\n\n");
-
-            // Print ciphertext before decryption
-            printf("--- Ciphertext Before Decryption ---\n");
-
-            // Print ciphertext in HEX
-            printf("Ciphertext (hex): ");
-            for (size_t i = 0; i < plen; i++) {
-                printf("%02x ", in[i]);
-            }
-            printf("\n");
-
-            // Print ciphertext as a readable string
-            printf("Ciphertext (string): ");
-            for (size_t i = 0; i < plen; i++) {
-                printf("%c", isprint(in[i]) ? in[i] : '.');
-            }
-            printf("\n");
-
-            // Print ciphertext size
-            printf("Ciphertext Length: %zu bytes\n", plen);
-
             // Determine the size of the decryption key
             size_t key_size = sizeof(ctx->chacha.key.d);
-
-            // Print the decryption key
-            printf("\n--- Decryption Key ---\n");
-            printf("Decryption Key (hex): ");
-            for (size_t i = 0; i < key_size; i++) {  
-                printf("%02x ", ((unsigned char*)ctx->chacha.key.d)[i]);
-            }
-            printf("\n");
-
-            // Print decryption key size in bytes & bits
-            printf("Decryption Key Size: %zu bytes (%zu bits)\n", key_size, key_size * 8);
-
-            // Inform that decryption is starting
             printf("\n--- Starting Decryption... ---\n");
-
-            // Perform decryption
             entropic_decryption(in, out, plen, ctx->chacha.key.d, key_size * 8);
-
             printf("\n--- Decryption Finished ---\n");
 
-            // Print decrypted plaintext in HEX
-            printf("\n--- Decrypted Plaintext ---\n");
-            printf("Decrypted Plaintext (hex): ");
-            for (size_t i = 0; i < plen; i++) {
-                printf("%02x ", out[i]);
-            }
-            printf("\n");
-
-            // Print decrypted plaintext as a readable string
-            printf("Decrypted Plaintext (string): ");
-            for (size_t i = 0; i < plen; i++) {
-                printf("%c", isprint(out[i]) ? out[i] : '.');
-            }
-            printf("\n");
-
-            // Print decrypted plaintext size
-            printf("Decrypted Plaintext Length: %zu bytes\n", plen);
-
-            // Update buffer pointers
             in += plen;
             out += plen;
             ctx->len.text += plen;
@@ -1346,24 +1238,19 @@ void simplemult_gf2x(uint64_t * c, uint64_t * a, unsigned terms_a, uint64_t * b,
 	//unsigned chunkNum  =  terms_a % terms_b ==0 ? terms_a / terms_b : (terms_a / terms_b) +1 ;
 	//printf("chunkNum :%u \n", chunkNum);
 	unsigned chunkIndex;
-	printf("\nsimplemult_gf2x 1\n");
     for (unsigned i = 0; i < chunkNum; i++){
 		chunkIndex = i*chunkSize;
 		//printf("chunkIndex :%u \n", chunkIndex);
 
 		//memset(d, 0, chunkSize * 2 * sizeof(uint64_t));
-			printf("\nsimplemult_gf2x 2\n");
 		gf2x_mul(d + chunkIndex*2, a + chunkIndex, chunkSize, b, chunkSize);
 		//printf("d :" ); byte_dump( d , chunkSize *2 ); puts("");
-        	printf("\nsimplemult_gf2x 3\n");
-
 		//printf("Before XOR: c:" ); byte_dump( c , terms_a + terms_b ); puts("");
 		xor_bytes( c + chunkIndex, d + chunkIndex*2, chunkSize*2);
 
 
 		//printf("After XOR: c:" ); byte_dump( c , terms_a + terms_b ); puts("");
 	}
-            	printf("\nsimplemult_gf2x 4: Function finished\n");
 	//printf("End of the function ");
 }
 
@@ -1411,8 +1298,6 @@ void entropic_encryption(const unsigned char *in, unsigned char *out, size_t len
     uint64_t lenM_64 = (lenM + 63) / 64; // Ensure lenM_64 accounts for alignment (round up to the next multiple of 64 bits)
     uint64_t lenk_64 = (len_key + 63) / 64;
     printf("\n===== [ Entropic_encryption function] =====\n");
-    printf("\n[Info] Plaintext length (bytes): %zu\n", lenM);
-    printf("[Info] Plaintext length (64-bit chunks): %lu\n", lenM_64);
     uint64_t *public_string = NULL;
     uint64_t *mult_result = NULL;
     uint64_t *chunks = NULL;
@@ -1444,7 +1329,6 @@ void entropic_encryption(const unsigned char *in, unsigned char *out, size_t len
     simplemult_gf2x(mult_result, public_string, lenM_64, (uint64_t *)key, lenk_64, chunks, chunkSize);
     free(chunks);
     chunks = NULL;
-    printf("\nWhere is the final_key generated? I see that here, we go from key to final_key with no assignation...\n");
     final_key = (uint64_t *)aligned_alloc(32, sizeof(uint64_t) * lenM_64);
     if (NULL == final_key) {
         fprintf(stderr, "entropic_encryption | alloc final_key fail.\n");
