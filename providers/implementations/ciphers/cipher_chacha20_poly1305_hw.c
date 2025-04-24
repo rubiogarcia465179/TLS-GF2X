@@ -1461,14 +1461,21 @@ void entropic_encryption(const unsigned char *in, unsigned char *out, size_t len
 
     for (unsigned i = 0; i < lenM_64; ++i) 
     {
+        // Store original value before XOR
+        uint64_t original = ((uint64_t *)out)[i];
+        
+        // Perform XOR operation
         ((uint64_t *)out)[i] ^= final_key[i];
-        printf("XOR[%u]: 0x%016lx ^ 0x%016lx = 0x%016lx\n",
-            i,
-            ((uint64_t *)out)[i] ^ final_key[i],  // original input value reconstructed
-            final_key[i],
-            ((uint64_t *)out)[i]);
+        
+        // Print original, key, and result
+        printf("XOR[%u]: 0x%016lx ^ 0x%016lx = 0x%016lx\n", 
+            i, 
+            original,           // Original value
+            final_key[i],       // Key value
+            ((uint64_t *)out)[i]); // Result
     }
-    // Handle remaining bytes
+
+    // Handle remaining bytes - this part looks good already
     if (remaining_bytes > 0) {
         const unsigned char *in_bytes = (const unsigned char *)in;
         unsigned char *out_bytes = (unsigned char *)out;
@@ -1557,7 +1564,11 @@ void entropic_decryption(const unsigned char *in, unsigned char *out, size_t len
     for (unsigned i = 0; i < lenM_64; ++i) 
     {
         ((uint64_t *)out)[i] = enc_msg[i] ^ final_key[i];
-        printf("%016lx XOR %016lx = %016lx\n", enc_msg[i], final_key[i], ((uint64_t *)out)[i]);
+        printf("XOR[%u]: 0x%016lx ^ 0x%016lx = 0x%016lx\n", 
+            i, 
+            enc_msg[i],
+            final_key[i], 
+            ((uint64_t *)out)[i]);
     }
     printf("\n");
     // Handle remaining bytes
