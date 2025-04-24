@@ -1343,40 +1343,24 @@ void entropic_encryption(const unsigned char *in, unsigned char *out, size_t len
     print_hex("Unencrypted", out, lenM);
     printf("\n===== [ Encryption XOR Started] =====\n");
 
-    for (unsigned i = 0; i < lenM_64; ++i) 
-    {
-        // Store original value before XOR
-        uint64_t original = ((uint64_t *)out)[i];
+    // XOR bytes individually
+    for (size_t i = 0; i < lenM; ++i) {
+        // Cast to byte pointers
+        unsigned char *out_bytes = (unsigned char *)out;
+        const unsigned char *key_bytes = (const unsigned char *)final_key;
+        
+        // Store original value
+        unsigned char original = out_bytes[i];
         
         // Perform XOR operation
-        ((uint64_t *)out)[i] ^= final_key[i];
+        out_bytes[i] ^= key_bytes[i];
         
-        // Print original, key, and result
-        printf("XOR[%u]: 0x%016lx ^ 0x%016lx = 0x%016lx\n", 
-            i, 
-            original,           // Original value
-            final_key[i],       // Key value
-            ((uint64_t *)out)[i]); // Result
-    }
-
-    // Handle remaining bytes - this part looks good already
-    if (remaining_bytes > 0) {
-        printf("Now going to remaining bytes - Maybe this runs again and reencryopt back to original value?");
-        const unsigned char *in_bytes = (const unsigned char *)in;
-        unsigned char *out_bytes = (unsigned char *)out;
-        const unsigned char *final_key_bytes = (const unsigned char *)final_key;
-        size_t start = lenM - remaining_bytes;
-
-        for (size_t i = 0; i < remaining_bytes; ++i) {
-            unsigned char result = in_bytes[start + i] ^ final_key_bytes[start + i];
-            out_bytes[start + i] = result;
-
-            printf("XOR[%zu]: 0x%02x ^ 0x%02x = 0x%02x\n",
-                start + i,
-                in_bytes[start + i],
-                final_key_bytes[start + i],
-                result);
-        }
+        // Print debug info
+        printf("XOR[%zu]: 0x%02x ^ 0x%02x = 0x%02x\n",
+            i,
+            original,       // Original value
+            key_bytes[i],   // Key value
+            out_bytes[i]);  // Result
     }
     printf("\n===== [ Encryption XOR Finished] =====\n");
     // === Print Summary ===
