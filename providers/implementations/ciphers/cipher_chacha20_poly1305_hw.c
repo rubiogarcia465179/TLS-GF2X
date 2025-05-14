@@ -937,6 +937,7 @@ void reduction_c1_par(uint64_t *d, uint64_t *Dred, uint64_t lenR_64, uint64_t le
     unsigned lenT1_64 = (b - 1 + 63)/64;
     unsigned lenT4_64 = (b + 63)/64;
     //printf("lenT1_64: %u, lenT4_64: %u \n", lenT1_64, lenT4_64);
+    print_hex("Dred1", Dred, lenDred_64 * sizeof(uint64_t));
 
     uint64_t * T1 = (uint64_t*)aligned_alloc( 32, sizeof(uint64_t)*lenT1_64);
 	if( NULL == T1 ) { printf("reduction_c1 |alloc T1 fail.\n"); exit(-1); }
@@ -952,17 +953,13 @@ void reduction_c1_par(uint64_t *d, uint64_t *Dred, uint64_t lenR_64, uint64_t le
     uint64_t XOR = 0; 
     uint64_t XOR_Result = 0;
 
-    
+    print_hex("Dred2", Dred, lenDred_64 * sizeof(uint64_t));
+
 #pragma omp parallel
 {
     #pragma omp for private(XOR_Result) schedule(static, 64)
     for (uint64_t i = 0; i < b - 1; i++) {
-        //printf("\n 1st Loop\n");
-        //printf("i + 2 * b + 1:%d \n", i + 2 * b + 1);
-        //printf("INDEX_64(i + 2 * b + 1, lenR_64):%d \n", INDEX_64(i + 2 * b + 1, lenR_64));
 
-        //printf("i + 3 * b + 2:%d \n", i + 3 * b + 2);
-        //printf("INDEX_64(i + 3 * b + 2, lenR_64):%d \n", INDEX_64(i + 3 * b + 2, lenR_64));
         
         if(i + 2 * b + 1 >= lenR || i + 3 * b + 2 >= lenR) continue;
         
@@ -979,16 +976,15 @@ void reduction_c1_par(uint64_t *d, uint64_t *Dred, uint64_t lenR_64, uint64_t le
             T1[INDEX_64(i, lenT1_64)] &= ~(MASK_ONE(INDEX_I(i)));
             ////printf("~(1<<INDEX_I(i)):%lu \n", ~(MASK_ONE(INDEX_I(i))));
         }
-        
-    }
-    #pragma omp for private(XOR_Result) schedule(static, 64)
-    for (uint64_t i = 0; i < b; i++) {
-        //printf("\n 2nd Loop\n");
-        //printf("i + 2 * b + 1:%d \n", i + 2 * b + 1);
-        //printf("INDEX_64(i + 2 * b + 1, lenR_64):%d \n", INDEX_64(i + 2 * b + 1, lenR_64));
+        print_hex("Dred2.5", Dred, lenDred_64 * sizeof(uint64_t));
 
-        //printf("i + 3 * b + 1:%d \n", i + 3 * b + 1);
-        //printf("INDEX_64(i + 3 * b + 1, lenR_64):%d \n", INDEX_64(i + 3 * b + 1, lenR_64));
+    }
+    print_hex("Dred3", Dred, lenDred_64 * sizeof(uint64_t));
+    #pragma omp for private(XOR_Result) schedule(static, 64)
+    print_hex("Dred4", Dred, lenDred_64 * sizeof(uint64_t));
+
+    for (uint64_t i = 0; i < b; i++) {
+
 
         if(i + 2 * b + 1 >= lenR || i + 3 * b + 1 >= lenR) continue;
 
@@ -1010,6 +1006,7 @@ void reduction_c1_par(uint64_t *d, uint64_t *Dred, uint64_t lenR_64, uint64_t le
 
     if(3 * b + 1 < lenR){
         //printf("\n1st Outer assignment\n");
+
         // Calculate Dred
         //Dred[0] = d[0] ^ T1[0] ^ d[3 * b + 1];
         XOR =   SHIFT_BACK((d[INDEX_64(0, lenR_64)]         & MASK_ONE(INDEX_I(0))), INDEX_I(0)) ^
@@ -1022,16 +1019,13 @@ void reduction_c1_par(uint64_t *d, uint64_t *Dred, uint64_t lenR_64, uint64_t le
             Dred[INDEX_64(0, lenDred_64)] &= ~(MASK_ONE(INDEX_I(0)));
         }
     }
+    print_hex("Dred5", Dred, lenDred_64 * sizeof(uint64_t));
+
 #pragma omp parallel
 {
     #pragma omp for private(XOR_Result) schedule(static, 64)
     for (uint64_t i = 0; i < b - 1; i++) {
-        //printf("\n 3rd Loop\n");
-        //printf("i :%d \n", i );
-        //printf("INDEX_64(i, lenR_64):%d \n", INDEX_64(i, lenR_64));
 
-        //printf("i -1:%d \n", i-1);
-        //printf("INDEX_64(i -1, lenT4_64):%d \n", INDEX_64(i -1, lenT4_64));
 
         if(i == 0) continue;
         //Dred[i] = d[i] ^ T1[i] ^ T4[i - 1];
@@ -1046,6 +1040,7 @@ void reduction_c1_par(uint64_t *d, uint64_t *Dred, uint64_t lenR_64, uint64_t le
         }
     }
 }
+print_hex("Dred6", Dred, lenDred_64 * sizeof(uint64_t));
 
     if(3 * b < lenR){
         //printf("\n2nd Outer assignment\n");
@@ -1072,16 +1067,13 @@ void reduction_c1_par(uint64_t *d, uint64_t *Dred, uint64_t lenR_64, uint64_t le
     else {
         Dred[INDEX_64(b, lenDred_64)] &= ~(MASK_ONE(INDEX_I(b)));
     }
+    print_hex("Dred7", Dred, lenDred_64 * sizeof(uint64_t));
+
 #pragma omp parallel
 {
     #pragma omp for firstprivate(XOR_Result) schedule(static, 64)
     for (uint64_t i = 0; i < 2 * b - 1; i++) {
         //printf("\n 4th Loop\n");
-        //printf("i - b:%d \n", i );
-        //printf("INDEX_64(i - b, lenR_64):%d \n", INDEX_64(i - b, lenT1_64));
-
-        //printf("i - b - 1:%d \n", i-1);
-        //printf("INDEX_64(i - b - 1, lenT4_64):%d \n", INDEX_64(i - b - 1, lenT4_64));
 
         if(i < b + 1) continue;
         //Dred[i] = d[i] ^ T1[i - b] ^ T1[i - b - 1];
@@ -1096,6 +1088,8 @@ void reduction_c1_par(uint64_t *d, uint64_t *Dred, uint64_t lenR_64, uint64_t le
         }
     }
 }
+print_hex("Dred8", Dred, lenDred_64 * sizeof(uint64_t));
+
     if(3 * b < lenR){
         //printf("\n4th Outer assignment\n");
         //Dred[2 * b - 1] = d[2 * b - 1] ^ d[3 * b] ^ T1[b - 2];
@@ -1127,6 +1121,8 @@ void reduction_c1_par(uint64_t *d, uint64_t *Dred, uint64_t lenR_64, uint64_t le
             //printf("5th Outer assignment\n");
             //printf("2 * b:%d Dred[INDEX_64(2 * b, lenDred_64)]:%lu\n",2 * b, Dred[INDEX_64(2 * b, lenDred_64)]);
         }
+        print_hex("Dred9", Dred, lenDred_64 * sizeof(uint64_t));
+
     }
     
     free(T1);
