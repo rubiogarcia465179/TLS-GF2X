@@ -1403,8 +1403,91 @@ void entropic_decryption(const unsigned char *in, unsigned char *out, size_t len
     if (NULL == chunks) {
         fprintf(stderr, "entropic_decryption | alloc chunks fail.\n");
         exit(-1);
-    }    
+    }
+    /*Logging section*/
+    // Add this debug section before the simplemult_gf2x call
+    printf("\n===== [ simplemult_gf2x Input Parameters ] =====\n");
+    printf("mult_result address: %p\n", (void*)mult_result);
+    printf("public_string address: %p\n", (void*)public_string);
+    printf("lenM_64: %lu (64-bit units)\n", lenM_64);
+    printf("key address: %p\n", (void*)key);
+    printf("lenk_64: %lu (64-bit units)\n", lenk_64);
+    printf("chunks address: %p\n", (void*)chunks);
+    printf("chunkSize: %u (64-bit units)\n", chunkSize);
+        // Print the first few values of public_string and key if they're not NULL
+    if (public_string != NULL) {
+        printf("First 3 public_string values (64-bit): ");
+        for (int i = 0; i < 3 && i < lenM_64; i++) {
+            printf("0x%016lx ", public_string[i]);
+        }
+        printf("\n");
+    }
+    
+    if (key != NULL) {
+        printf("First 3 key values (64-bit): ");
+        for (int i = 0; i < 3 && i < lenk_64; i++) {
+            printf("0x%016lx ", ((uint64_t*)key)[i]);
+        }
+        printf("\n");
+    }
+    
+    // Check initial state of output parameters (mult_result and chunks)
+    printf("Initial state of output parameters:\n");
+    printf("First 3 mult_result values (likely uninitialized): ");
+    for (int i = 0; i < 3 && i < lenR_64; i++) {
+        printf("0x%016lx ", mult_result[i]);
+    }
+    printf("\n");
+    
+    printf("First 3 chunks values (likely uninitialized): ");
+    for (int i = 0; i < 3 && i < (chunkSize * 2 * chunkNum); i++) {
+        printf("0x%016lx ", chunks[i]);
+    }
+    printf("\n");
+    printf("===========================================\n");
+
+    /*Until here is logging*/
     simplemult_gf2x(mult_result, public_string, lenM_64, (uint64_t *)key, lenk_64, chunks, chunkSize);
+    /*Logging output*/
+    // AFTER function call - print output parameters
+    printf("\n===== [ simplemult_gf2x Output Results ] =====\n");
+    
+    // Print modified parameters (mult_result is the main output)
+    printf("Results after function call:\n");
+    printf("First 8 mult_result values: ");
+    for (int i = 0; i < 8 && i < lenR_64; i++) {
+        printf("0x%016lx ", mult_result[i]);
+    }
+    printf("\n");
+    
+    // Print last few values to see if there are meaningful results at the end
+    printf("Last 4 mult_result values: ");
+    if (lenR_64 > 4) {
+        for (int i = lenR_64 - 4; i < lenR_64; i++) {
+            printf("0x%016lx ", mult_result[i]);
+        }
+    }
+    printf("\n");
+    
+    // Since chunks is a workspace, let's look at a bit of what's in it
+    printf("First 4 chunks values after calculation: ");
+    for (int i = 0; i < 4 && i < (chunkSize * 2 * chunkNum); i++) {
+        printf("0x%016lx ", chunks[i]);
+    }
+    printf("\n");
+    
+    // Show a summary of non-zero values in mult_result 
+    uint64_t nonzero_count = 0;
+    for (uint64_t i = 0; i < lenR_64; i++) {
+        if (mult_result[i] != 0) nonzero_count++;
+    }
+    printf("Summary: %lu of %lu mult_result elements are non-zero (%.1f%%)\n", 
+           nonzero_count, lenR_64, 
+           (lenR_64 > 0) ? ((double)nonzero_count / lenR_64 * 100.0) : 0);
+    
+    printf("===========================================\n");
+
+    /*End of logging output*/
     free(chunks);
     chunks = NULL;
     uint64_t *final_key = (uint64_t *)aligned_alloc(32, sizeof(uint64_t) * lenM_64);
