@@ -1332,7 +1332,9 @@ void entropic_encryption(const unsigned char *in, unsigned char *out, size_t len
         fprintf(stderr, "entropic_encryption | alloc final_key fail.\n");
         exit(-1);
     }
+    print_hex("Final Key before reduction", final_key, lenM_64 * sizeof(uint64_t));
     reduction(2, mult_result, final_key, lenR_64, lenR, lenM, lenM_64);
+    print_hex("Final Key after reduction", final_key, lenM_64 * sizeof(uint64_t));
     free(mult_result);
     size_t remaining_bytes = lenM % sizeof(uint64_t);
     printf("\nPerforming XOR\n");
@@ -1405,44 +1407,7 @@ void entropic_decryption(const unsigned char *in, unsigned char *out, size_t len
 
     /*Until here is logging*/
     simplemult_gf2x(mult_result, public_string, lenM_64, (uint64_t *)key, lenk_64, chunks, chunkSize);
-    /*Logging output*/
-    // AFTER function call - print output parameters
-    printf("\n===== [ simplemult_gf2x Output Results ] =====\n");
-    
-    // Print modified parameters (mult_result is the main output)
-    printf("Results after function call:\n");
-    printf("First 8 mult_result values: ");
-    for (int i = 0; i < 8 && i < lenR_64; i++) {
-        printf("0x%016lx ", mult_result[i]);
-    }
-    printf("\n");
-    
-    // Print last few values to see if there are meaningful results at the end
-    printf("Last 4 mult_result values: ");
-    if (lenR_64 > 4) {
-        for (int i = lenR_64 - 4; i < lenR_64; i++) {
-            printf("0x%016lx ", mult_result[i]);
-        }
-    }
-    printf("\n");
-    
-    // Since chunks is a workspace, let's look at a bit of what's in it
-    printf("First 4 chunks values after calculation: ");
-    for (int i = 0; i < 4 && i < (chunkSize * 2 * chunkNum); i++) {
-        printf("0x%016lx ", chunks[i]);
-    }
-    printf("\n");
-    
-    // Show a summary of non-zero values in mult_result 
-    uint64_t nonzero_count = 0;
-    for (uint64_t i = 0; i < lenR_64; i++) {
-        if (mult_result[i] != 0) nonzero_count++;
-    }
-    printf("Summary: %lu of %lu mult_result elements are non-zero (%.1f%%)\n", 
-           nonzero_count, lenR_64, 
-           (lenR_64 > 0) ? ((double)nonzero_count / lenR_64 * 100.0) : 0);
-    
-    printf("===========================================\n");
+    /
 
     /*End of logging output*/
     free(chunks);
@@ -1456,7 +1421,11 @@ void entropic_decryption(const unsigned char *in, unsigned char *out, size_t len
         fprintf(stderr, "entropic_decryption | Memory corruption risk.\n");
         return;
     }
+
+    print_hex("Final Key before reduction", final_key, lenM_64 * sizeof(uint64_t));
     reduction(2, mult_result, final_key, lenR_64, lenR, lenM, lenM_64);
+    print_hex("Final Key after reduction", final_key, lenM_64 * sizeof(uint64_t));
+
     free(mult_result);
     mult_result = NULL;
 
