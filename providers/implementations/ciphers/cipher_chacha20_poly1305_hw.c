@@ -1407,7 +1407,7 @@ void entropic_decryption(const unsigned char *in, unsigned char *out, size_t len
 
     /*Until here is logging*/
     simplemult_gf2x(mult_result, public_string, lenM_64, (uint64_t *)key, lenk_64, chunks, chunkSize);
-    /
+    
 
     /*End of logging output*/
     free(chunks);
