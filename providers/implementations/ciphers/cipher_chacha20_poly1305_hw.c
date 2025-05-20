@@ -982,8 +982,7 @@ void reduction_c1_par(uint64_t *d, uint64_t *Dred, uint64_t lenR_64, uint64_t le
     }
     print_hex("Dred3", Dred, lenDred_64 * sizeof(uint64_t));
     #pragma omp for private(XOR_Result) schedule(static, 64)
-    print_hex("Dred4", Dred, lenDred_64 * sizeof(uint64_t));
-    printf("\n\n\nDRED4\n\n\n\n");
+
 
     for (uint64_t i = 0; i < b; i++) {
 
@@ -1021,8 +1020,8 @@ void reduction_c1_par(uint64_t *d, uint64_t *Dred, uint64_t lenR_64, uint64_t le
             Dred[INDEX_64(0, lenDred_64)] &= ~(MASK_ONE(INDEX_I(0)));
         }
     }
-    print_hex("Dred5", Dred, lenDred_64 * sizeof(uint64_t));
-
+    print_hex("Dred4", Dred, lenDred_64 * sizeof(uint64_t));
+    printf("\n\n\nDRED4\n\n\n\n");
 #pragma omp parallel
 {
     #pragma omp for private(XOR_Result) schedule(static, 64)
@@ -1041,8 +1040,9 @@ void reduction_c1_par(uint64_t *d, uint64_t *Dred, uint64_t lenR_64, uint64_t le
             Dred[INDEX_64(i, lenDred_64)] &= ~(MASK_ONE(INDEX_I(i)));
         }
     }
+        print_hex("Dred5", Dred, lenDred_64 * sizeof(uint64_t));
+    printf("\n\n\nDRED5\n\n\n\n");
 }
-print_hex("Dred6", Dred, lenDred_64 * sizeof(uint64_t));
 
     if(3 * b < lenR){
         //printf("\n2nd Outer assignment\n");
