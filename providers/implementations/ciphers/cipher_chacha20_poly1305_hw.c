@@ -954,6 +954,7 @@ void reduction_c1_par(uint64_t *d, uint64_t *Dred, uint64_t lenR_64, uint64_t le
     uint64_t XOR_Result = 0;
 
     print_hex("Dred2", Dred, lenDred_64 * sizeof(uint64_t));
+    printf("\n\n\nDRED2\n\n\n\n");
 
 #pragma omp parallel
 {
@@ -977,11 +978,12 @@ void reduction_c1_par(uint64_t *d, uint64_t *Dred, uint64_t lenR_64, uint64_t le
             ////printf("~(1<<INDEX_I(i)):%lu \n", ~(MASK_ONE(INDEX_I(i))));
         }
         print_hex("Dred2.5", Dred, lenDred_64 * sizeof(uint64_t));
-
+    printf("\n\n\nDRED2.5\n\n\n\n");
     }
     print_hex("Dred3", Dred, lenDred_64 * sizeof(uint64_t));
     #pragma omp for private(XOR_Result) schedule(static, 64)
     print_hex("Dred4", Dred, lenDred_64 * sizeof(uint64_t));
+    printf("\n\n\nDRED4\n\n\n\n");
 
     for (uint64_t i = 0; i < b; i++) {
 
@@ -1400,47 +1402,6 @@ void entropic_decryption(const unsigned char *in, unsigned char *out, size_t len
         fprintf(stderr, "entropic_decryption | alloc chunks fail.\n");
         exit(-1);
     }
-    /*Logging section*/
-    // Add this debug section before the simplemult_gf2x call
-    printf("\n===== [ simplemult_gf2x Input Parameters ] =====\n");
-    printf("mult_result address: %p\n", (void*)mult_result);
-    printf("public_string address: %p\n", (void*)public_string);
-    printf("lenM_64: %lu (64-bit units)\n", lenM_64);
-    printf("key address: %p\n", (void*)key);
-    printf("lenk_64: %lu (64-bit units)\n", lenk_64);
-    printf("chunks address: %p\n", (void*)chunks);
-    printf("chunkSize: %u (64-bit units)\n", chunkSize);
-        // Print the first few values of public_string and key if they're not NULL
-    if (public_string != NULL) {
-        printf("First 3 public_string values (64-bit): ");
-        for (int i = 0; i < 3 && i < lenM_64; i++) {
-            printf("0x%016lx ", public_string[i]);
-        }
-        printf("\n");
-    }
-    
-    if (key != NULL) {
-        printf("First 3 key values (64-bit): ");
-        for (int i = 0; i < 3 && i < lenk_64; i++) {
-            printf("0x%016lx ", ((uint64_t*)key)[i]);
-        }
-        printf("\n");
-    }
-    
-    // Check initial state of output parameters (mult_result and chunks)
-    printf("Initial state of output parameters:\n");
-    printf("First 3 mult_result values (likely uninitialized): ");
-    for (int i = 0; i < 3 && i < lenR_64; i++) {
-        printf("0x%016lx ", mult_result[i]);
-    }
-    printf("\n");
-    
-    printf("First 3 chunks values (likely uninitialized): ");
-    for (int i = 0; i < 3 && i < (chunkSize * 2 * chunkNum); i++) {
-        printf("0x%016lx ", chunks[i]);
-    }
-    printf("\n");
-    printf("===========================================\n");
 
     /*Until here is logging*/
     simplemult_gf2x(mult_result, public_string, lenM_64, (uint64_t *)key, lenk_64, chunks, chunkSize);
